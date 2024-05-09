@@ -25,13 +25,20 @@ namespace {
 
 namespace cudascii {
 
+    __global__ void set_high(unsigned char *out) {
+
+        // Thread index
+        int i = threadIdx.x + blockIdx.x * blockDim.x;
+        out[i] = 66;
+    }
+
     __global__ void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b) {
 
         // Thread index
         int i = threadIdx.x + blockIdx.x * blockDim.x;
 
         float c_linear, c_srgb;
-        int gray_index;
+        int gray_index{0};
         
         // Standard linear combination
         c_linear = RED_WEIGHT*(r[i]/255.) + GREEN_WEIGHT*(g[i]/255.) + BLUE_WEIGHT*(b[i]/255.);
@@ -56,9 +63,6 @@ namespace cudascii {
         // Load Image using CImg
         cimg_library::CImg<unsigned char> src(filename.c_str());
 
-        // Declare Host result
-        std::vector<unsigned char> h_out;
-
         // Get the image dimensions
         const int width = src.width();
         const int height = src.height();
@@ -66,6 +70,11 @@ namespace cudascii {
         // Assess how much memory is needed for image
         const unsigned int N = width*height;
         const unsigned int bytes = N * sizeof(unsigned char);
+
+        // Declare Host result
+        std::vector<unsigned char> h_out(N, 65); // 54 in ASCII is "A"
+
+        // unsigned char* h_out = static_cast<unsigned char*>(malloc(bytes));
 
         // Allocate GPU memory
         unsigned char *d_out, *d_r, *d_g, *d_b;
@@ -89,10 +98,28 @@ namespace cudascii {
         // Call the pixel_to_ascii code here
         int threadsPerBlock = 256;
         int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-        pixel_to_ascii<<<threadsPerBlock,blocksPerGrid>>>(d_out, d_r, d_g, d_b);
+        // pixel_to_ascii<<<threadsPerBlock,blocksPerGrid>>>(d_out, d_r, d_g, d_b);
+
+        set_high<<<threadsPerBlock,blocksPerGrid>>>(d_out);
+
+        const auto error = cudaGetLastError();
+
+        if(error != cudaSuccess)
+        {
+            std::cout << "failure!!!!!!" << std::endl; 
+            std::cout << "result: " << error << std::endl; 
+            return "";
+        }
 
         // Copy the ascii array from device (GPU) to host (CPU)
-        cudaMemcpy(h_out.data(), d_out, bytes, cudaMemcpyDeviceToHost);
+        const auto result = cudaMemcpy(h_out.data(), d_out, bytes, cudaMemcpyDeviceToHost);
+
+        if(result != cudaSuccess)
+        {
+            std::cout << "failure!!!!!!" << std::endl; 
+            std::cout << "result: " << result << std::endl; 
+            return "";
+        }
 
         // Don't forget to free memory!!!!
         cudaFree(d_out);
@@ -101,11 +128,11 @@ namespace cudascii {
         cudaFree(d_b);
 
         // Build string return value
-        std::string text(height*(width+1)-1, ' ');
+        std::string text;
 
-        for (int row; row < height; row++) {
+        for (int row{0}; row < height; row++) {
 
-            for (int col; col < height; col++)
+            for (int col{0}; col < width; col++)
                 text += h_out[row*width + col];
 
             if (row != height-1)
@@ -113,16 +140,9 @@ namespace cudascii {
 
         }
 
+        // free(h_out);
+
         return text;
-
-    }
-
-
-    __global__ void set_high(unsigned char *out) {
-
-        // Thread index
-        int i = threadIdx.x + blockIdx.x * blockDim.x;
-        out[i] = 255;
 
     }
 
