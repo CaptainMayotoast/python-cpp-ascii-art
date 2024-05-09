@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "name": "Meson modern C++ development environment",
+      "intelliSenseMode": "gcc-x64",
+      "includePath": [
+        "${workspaceFolder}",
+        "/usr/include/**"
+      ],
+      "compilerPath": "/usr/local/bin/gcc",
+      "cStandard": "c17",
+      "cppStandard": "c++20",
+      "compileCommands": "/build/release/compile_commands.json",
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "/usr/include/**"
+        ],
+        "limitSymbolsToIncludedHeaders": false,
+      }
+    }
+  ],
+  "version": 4
+}

@@ -1,4 +1,4 @@
-project('securitysystem', 'cpp', 'c', 'cuda',
+project('securitysystem', 'cpp', 'c', #'cuda',
   version : '0.1',
   default_options : [
                      #'b_lto_mode=default', 
@@ -74,7 +74,7 @@ py_dep = py_installation.dependency()
 dep_list += py_dep
 
 # CUDA
-cuda_dep = dependency('cuda', version : '>=12', modules : ['cudart', 'nvrtc', 'culibos', 'cublas', 'curand'], native: true, static: true)
+#cuda_dep = dependency('cuda', version : '>=12', modules : ['cudart', 'nvrtc', 'culibos', 'cublas', 'curand'], native: true, static: true)
 
 cpp = meson.get_compiler('cpp')
 
@@ -111,6 +111,11 @@ dep_list += cli11_core_dep
 fmt_proj = subproject('fmt', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
 fmt_dep = fmt_proj.get_variable('fmt_dep')
 dep_list += fmt_dep
+
+# catch2
+catch2_with_main_proj = subproject('catch2', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+catch2_with_main_dep = catch2_with_main_proj.get_variable('catch2_with_main_dep')
+dep_list += catch2_with_main_dep
 
 # spdlog
 spdlog_proj = subproject('spdlog', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
