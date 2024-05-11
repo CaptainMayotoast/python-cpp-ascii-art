@@ -32,8 +32,8 @@
     },
     "runArgs": [
         // enable if NVidia container kit installed
-        // "--gpus",
-        // "all",
+        "--gpus",
+        "all",
         "--network=host",
         "--cap-add=SYS_PTRACE",
         "--security-opt",
@@ -42,11 +42,15 @@
         "DISPLAY=${env:DISPLAY}",
         "-v",
         // requires running "git config --global [<user.email>|<user.name>] '<text>'" on the host
-        "/home/${env:USERNAME}/.gitconfig:/etc/gitconfig",
+        // https://stackoverflow.com/a/58644177
+        // run
+        // rmdir ~/.gitconfig && nano ~/.gitconfig
+        // when things get weird with git
+        "${localEnv:HOME}/.gitconfig:/etc/gitconfig:ro",
         "-v",
         "/tmp/.X11-unix:/tmp/.X11-unix",
         "-v",
-        "/home/${env:USERNAME}/.ssh:/home/${env:USERNAME}/.ssh"
+        "${localEnv:HOME}/.ssh:${localEnv:HOME}/.ssh:ro"
     ],
     // persist VS Code extensions, persist bash history
     // https://code.visualstudio.com/remote/advancedcontainers/avoid-extension-reinstalls
@@ -54,7 +58,7 @@
     // remove volume with: docker volume rm [volume name]
     // consider naming Docker volumes with a username to avoid any conflicts that may arise on a shared machine.
     "mounts": [
-        "source=extensions,target=/home/${env:USERNAME}/.vscode-server/extensions,type=volume",
+        "source=extensions,target=${localEnv:HOME}/.vscode-server/extensions,type=volume",
         "source=bashhistory,target=/commandhistory,type=volume"
     ],
     "workspaceFolder": "/build",
@@ -64,5 +68,6 @@
     "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/build,consistency=consistent",
     "updateRemoteUserUID": false,
     "overrideCommand": true,
-    "containerEnv": { "PATH": "${localEnv:PATH}:/usr/local/cuda-12.4/bin/:/opt/cmake/bin" }
+    // this is taken care of when containers are built 
+    // "containerEnv": { "PATH": "${localEnv:PATH}:/usr/local/cuda-12.4/bin/:/opt/cmake/bin" }
 }

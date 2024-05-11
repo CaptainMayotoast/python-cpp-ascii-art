@@ -1,6 +1,10 @@
 FROM meson-build:13.2
 
 # run as non-root
+#
+# anecdote:
+# on Linux, UID and GID are usually the same by default
+# on MacOS, UID and GID are sometimes different
 ARG USERNAME
 ARG USER_UID
 ARG USER_GID=$USER_UID
