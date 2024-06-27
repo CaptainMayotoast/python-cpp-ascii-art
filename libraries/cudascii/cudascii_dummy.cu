@@ -32,6 +32,22 @@ namespace cudascii {
         out[i] = 66;
     }
 
+    __global__ void setPixelsTo255(unsigned char *out, int width, int height) {
+        // Calculate the global pixel index
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
+        int y = blockIdx.y * blockDim.y + threadIdx.y;
+        
+        // Check if within bounds
+        if (x < width && y < height) {
+            // Calculate 1D index for the pixel
+            int index = y * width + x;
+            
+            // Set pixel value to 255 (white)
+            out[index] = 255;
+        }
+    }
+
+
     __global__ void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b) {
 
         // Thread index
@@ -72,7 +88,7 @@ namespace cudascii {
         const unsigned int bytes = N * sizeof(unsigned char);
 
         // Declare Host result
-        std::vector<unsigned char> h_out(N, 65); // 54 in ASCII is "A"
+        std::vector<unsigned char> h_out(N, 65); // 65 in ASCII is "A"
 
         // unsigned char* h_out = static_cast<unsigned char*>(malloc(bytes));
 
@@ -94,18 +110,36 @@ namespace cudascii {
         cudaMemcpy(d_r, src.channel(0), bytes, cudaMemcpyHostToDevice);
         cudaMemcpy(d_g, src.channel(1), bytes, cudaMemcpyHostToDevice);
         cudaMemcpy(d_b, src.channel(2), bytes, cudaMemcpyHostToDevice);
+
+        auto error = cudaGetLastError();
+
+        if(error != cudaSuccess)
+        {
+            std::cout << "cudaMemcpy" << std::endl;
+            std::cout << "failure!!!!!!" << std::endl; 
+            std::cout << "result: " << error << std::endl; 
+            return "";
+        }
         
         // Call the pixel_to_ascii code here
         int threadsPerBlock = 256;
         int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+
+        // Launch kernel
+        dim3 blockSize(16, 16); // 16x16 threads per block
+        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
+
+        setPixelsTo255<<<gridSize, blockSize>>>(d_out, width, height);
+
         // pixel_to_ascii<<<threadsPerBlock,blocksPerGrid>>>(d_out, d_r, d_g, d_b);
 
-        set_high<<<threadsPerBlock,blocksPerGrid>>>(d_out);
+        // set_high<<<threadsPerBlock,blocksPerGrid>>>(d_out);
 
-        const auto error = cudaGetLastError();
+        error = cudaGetLastError();
 
         if(error != cudaSuccess)
         {
+            std::cout << "setPixelsTo255" << std::endl;
             std::cout << "failure!!!!!!" << std::endl; 
             std::cout << "result: " << error << std::endl; 
             return "";
@@ -116,6 +150,7 @@ namespace cudascii {
 
         if(result != cudaSuccess)
         {
+            std::cout << "cudaMemcpy" << std::endl;
             std::cout << "failure!!!!!!" << std::endl; 
             std::cout << "result: " << result << std::endl; 
             return "";
@@ -149,7 +184,11 @@ namespace cudascii {
     bool test_cuda() {
 
         // Assess how much memory is needed for image
-        const unsigned int N = 1'000'000'000;
+        unsigned int width, height;
+        width = 2560;
+        height = 5120;
+
+        const unsigned int N = width * height;
         const unsigned int bytes = N * sizeof(unsigned char);
 
         // Allocate GPU memory
@@ -168,9 +207,25 @@ namespace cudascii {
         // cudaMemcpy(d_a, src, bytes, cudaMemcpyHostToDevice);
 
         // Call the kernel code here
-        int threadsPerBlock = 256;
-        int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-        set_high<<<threadsPerBlock,blocksPerGrid>>>(d_a);
+        // int threadsPerBlock = 256;
+        // int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+        // set_high<<<threadsPerBlock,blocksPerGrid>>>(d_a);
+
+        
+
+        dim3 blockSize(16, 16); // 16x16 threads per block
+        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
+
+        setPixelsTo255<<<gridSize, blockSize>>>(d_a, width, height);
+
+        const auto error = cudaGetLastError();
+
+        if(error != cudaSuccess)
+        {
+            std::cout << "failure!!!!!!" << std::endl; 
+            std::cout << "result: " << error << std::endl; 
+            return "";
+        }
 
         // Copy the ascii array from device (GPU) to host (CPU)
         // cudaMemcpy(h_a, d_a, bytes, cudaMemcpyDeviceToHost);
