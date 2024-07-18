@@ -43,7 +43,7 @@ namespace cudascii {
             int index = y * width + x;
             
             // Set pixel value to 255 (white)
-            out[index] = 255;
+            out[index] = 66;
         }
     }
 
@@ -76,8 +76,12 @@ namespace cudascii {
 
     std::string image_to_ascii(const std::string &filename) {
 
+        std::cout << "Reading file" << std::endl;
+
         // Load Image using CImg
         cimg_library::CImg<unsigned char> src(filename.c_str());
+
+        std::cout << "File read successfully" << std::endl;
 
         // Get the image dimensions
         const int width = src.width();
@@ -99,10 +103,13 @@ namespace cudascii {
         cs_r = cudaMalloc((unsigned char**)&d_r, bytes);
         cs_g = cudaMalloc((unsigned char**)&d_g, bytes);
         cs_b = cudaMalloc((unsigned char**)&d_b, bytes);
+
+        std::cout << "Allocated GPU memory" << std::endl;
         
         if((cs_out | cs_r | cs_g | cs_b) != cudaSuccess)
         {
             std::cout << "failed!" << std::endl;
+            std::cout << cs_out << ',' << cs_r << ',' << cs_g << ',' << cs_b << std::endl;
             return "";
         }
 
@@ -112,6 +119,8 @@ namespace cudascii {
         cudaMemcpy(d_b, src.channel(2), bytes, cudaMemcpyHostToDevice);
 
         auto error = cudaGetLastError();
+
+        std::cout << "Copied CPU to GPU memory" << std::endl;
 
         if(error != cudaSuccess)
         {
@@ -130,6 +139,8 @@ namespace cudascii {
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
         setPixelsTo255<<<gridSize, blockSize>>>(d_out, width, height);
+
+        std::cout << "Set Pixels to 255" << std::endl;
 
         // pixel_to_ascii<<<threadsPerBlock,blocksPerGrid>>>(d_out, d_r, d_g, d_b);
 
@@ -164,11 +175,16 @@ namespace cudascii {
 
         // Build string return value
         std::string text;
+        char val;
 
         for (int row{0}; row < height; row++) {
 
-            for (int col{0}; col < width; col++)
-                text += h_out[row*width + col];
+            for (int col{0}; col < width; col++) {
+                val = h_out[row*width + col];
+                // assert(val > 65 & val < 123) 
+                text += val;
+            }
+                
 
             if (row != height-1)
                 text += '\n';
