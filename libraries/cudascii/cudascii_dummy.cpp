@@ -5,7 +5,7 @@
 
 namespace cudascii {
 
-    void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b);
+    void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b, int width, int height);
     bool test_cuda();
     
     std::tuple<int, int, int> get_image_size(const std::string &filename) {

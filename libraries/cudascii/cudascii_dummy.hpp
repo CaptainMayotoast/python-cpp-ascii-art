@@ -5,7 +5,7 @@
 namespace cudascii {
 
     // Cuda kernel function mapping an RGB pixel to a gray level char
-    void pixel_to_ascii(unsigned char *out, unsigned char r, unsigned char g, unsigned char b);
+    void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b, int width, int height);
     void set_high(unsigned char *out);
     
     bool test_cuda();

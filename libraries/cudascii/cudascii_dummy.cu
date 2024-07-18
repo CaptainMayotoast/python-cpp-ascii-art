@@ -48,10 +48,20 @@ namespace cudascii {
     }
 
 
-    __global__ void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b) {
+    __global__ void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b, int width, int height) {
 
+        // const constexpr char* lookup{"@%#*+=-:. "};
+
+        // Calculate the global pixel index
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
+        int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+        if (!(x < width && y < height))
+            return;
+
+        int i = y * width + x;
         // Thread index
-        int i = threadIdx.x + blockIdx.x * blockDim.x;
+        // int i = threadIdx.x + blockIdx.x * blockDim.x;
 
         float c_linear, c_srgb;
         int gray_index{0};
@@ -68,7 +78,7 @@ namespace cudascii {
             c_srgb = ABOVE_THRESHOLD_SCALAR * powf(c_linear,ABOVE_THRESHOLD_EXPONENT) + ABOVE_THRESHOLD_OFFSET;
         
         // Scale c_srgb to the gray levels while handling an edge case of c_srgb = 1
-        gray_index = (int) fmin(c_srgb * gray_levels, gray_levels - 1.);
+        gray_index = static_cast<int>(fmin((1-c_srgb) * gray_levels, gray_levels - 1));
 
         // Final character representing the gray level of the RGB pixel
         out[i] = gray_level_lookup[gray_index];
@@ -138,9 +148,10 @@ namespace cudascii {
         dim3 blockSize(16, 16); // 16x16 threads per block
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
-        setPixelsTo255<<<gridSize, blockSize>>>(d_out, width, height);
+        // setPixelsTo255<<<gridSize, blockSize>>>(d_out, width, height);
+        pixel_to_ascii<<<gridSize, blockSize>>>(d_out, d_r, d_g, d_b, width, height);
 
-        std::cout << "Set Pixels to 255" << std::endl;
+        std::cout << "Changed pixel intensity to Ascii" << std::endl;
 
         // pixel_to_ascii<<<threadsPerBlock,blocksPerGrid>>>(d_out, d_r, d_g, d_b);
 
@@ -150,7 +161,7 @@ namespace cudascii {
 
         if(error != cudaSuccess)
         {
-            std::cout << "setPixelsTo255" << std::endl;
+            std::cout << "image_to_ascii" << std::endl;
             std::cout << "failure!!!!!!" << std::endl; 
             std::cout << "result: " << error << std::endl; 
             return "";
@@ -175,23 +186,16 @@ namespace cudascii {
 
         // Build string return value
         std::string text;
-        char val;
 
         for (int row{0}; row < height; row++) {
 
-            for (int col{0}; col < width; col++) {
-                val = h_out[row*width + col];
-                // assert(val > 65 & val < 123) 
-                text += val;
-            }
-                
+            for (int col{0}; col < width; col++)
+                text += h_out[row*width + col];                
 
             if (row != height-1)
                 text += '\n';
 
         }
-
-        // free(h_out);
 
         return text;
 
