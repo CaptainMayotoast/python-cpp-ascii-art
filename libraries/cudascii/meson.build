@@ -9,7 +9,7 @@ lib_static_cuda_cudascii = static_library('cudascii_cuda',
                             cuda_args : [cuda.nvcc_arch_flags('12.4', 'Common')] + ['--expt-relaxed-constexpr', '--std=c++20'],
                             link_args: ['-static-libstdc++'],
                             install: false,
-                            dependencies: [cuda_dep, libcudart_dep, lib_static_cimg_dep])
+                            dependencies: [cuda_dep, libcudart_dep, lib_static_cimg_dep, catch2_with_main_dep])
 
 lib_static_cuda_cudascii_dep = declare_dependency(link_with: lib_static_cuda_cudascii,
                                                   include_directories: cudascii_include)

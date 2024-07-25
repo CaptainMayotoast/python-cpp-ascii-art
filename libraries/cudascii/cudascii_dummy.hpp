@@ -4,13 +4,29 @@
 
 namespace cudascii {
 
+    ////////////////////////////////////////////////////////////////////
+    // CUDA functions
+
     // Cuda kernel function mapping an RGB pixel to a gray level char
     void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b, int width, int height);
-    void set_high(unsigned char *out);
     
+    ////////////////////////////////////////////////////////////////////
+    // Python functions within the module
+
     bool test_cuda();
-    std::string image_to_ascii(const std::string &filename);
+
+    /**
+     * @brief Convert an image to ASCII
+     * 
+     * @param filename the image to convert
+     * @param patch_width the width in pixels of a character (defaulted to 8, which appears to be the width of an Ubuntu monospace font)
+     * @param patch_height the height in pixels of a character (defaulted to 14, which appears to be the height of an Ubuntu monospace font)
+     * @return std::string the ASCII representation of an image
+     */
+    std::string image_to_ascii(const std::string &filename, int patch_width = 8u, int patch_height = 14u);
     std::tuple<int, int, int> get_image_size(const std::string &filename);
+
+    
 
     PYBIND11_MODULE(cudascii, m) {
         m.doc() = "pybind11 cimg example plugin"; // optional module docstring

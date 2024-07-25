@@ -25,13 +25,6 @@ namespace {
 
 namespace cudascii {
 
-    __global__ void set_high(unsigned char *out) {
-
-        // Thread index
-        int i = threadIdx.x + blockIdx.x * blockDim.x;
-        out[i] = 66;
-    }
-
     __global__ void setPixelsTo255(unsigned char *out, int width, int height) {
         // Calculate the global pixel index
         int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -49,8 +42,6 @@ namespace cudascii {
 
 
     __global__ void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b, int width, int height) {
-
-        // const constexpr char* lookup{"@%#*+=-:. "};
 
         // Calculate the global pixel index
         int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -84,7 +75,7 @@ namespace cudascii {
         out[i] = gray_level_lookup[gray_index];
     }
 
-    std::string image_to_ascii(const std::string &filename) {
+    std::string image_to_ascii(const std::string &filename, int patch_width, int patch_height) {
 
         std::cout << "Reading file" << std::endl;
 
@@ -94,8 +85,14 @@ namespace cudascii {
         std::cout << "File read successfully" << std::endl;
 
         // Get the image dimensions
-        const int width = src.width();
-        const int height = src.height();
+        int width{src.width()};
+        int height{src.height()};
+
+        // clip image to the patch size
+        width = (width / patch_width) * patch_width;
+        height = (height / patch_height) * patch_height;
+
+        src = src.crop(0, 0, width, height);
 
         // Assess how much memory is needed for image
         const unsigned int N = width*height;
@@ -148,14 +145,9 @@ namespace cudascii {
         dim3 blockSize(16, 16); // 16x16 threads per block
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
-        // setPixelsTo255<<<gridSize, blockSize>>>(d_out, width, height);
         pixel_to_ascii<<<gridSize, blockSize>>>(d_out, d_r, d_g, d_b, width, height);
 
         std::cout << "Changed pixel intensity to Ascii" << std::endl;
-
-        // pixel_to_ascii<<<threadsPerBlock,blocksPerGrid>>>(d_out, d_r, d_g, d_b);
-
-        // set_high<<<threadsPerBlock,blocksPerGrid>>>(d_out);
 
         error = cudaGetLastError();
 
@@ -223,16 +215,6 @@ namespace cudascii {
             std::cout << "passed!" << std::endl;
         }
 
-        // Copy the image from host (CPU) to device (GPU)
-        // cudaMemcpy(d_a, src, bytes, cudaMemcpyHostToDevice);
-
-        // Call the kernel code here
-        // int threadsPerBlock = 256;
-        // int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-        // set_high<<<threadsPerBlock,blocksPerGrid>>>(d_a);
-
-        
-
         dim3 blockSize(16, 16); // 16x16 threads per block
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
@@ -246,9 +228,6 @@ namespace cudascii {
             std::cout << "result: " << error << std::endl; 
             return "";
         }
-
-        // Copy the ascii array from device (GPU) to host (CPU)
-        // cudaMemcpy(h_a, d_a, bytes, cudaMemcpyDeviceToHost);
 
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(3s);
