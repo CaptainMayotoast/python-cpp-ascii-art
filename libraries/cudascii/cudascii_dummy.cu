@@ -92,7 +92,7 @@ namespace cudascii {
         width = (width / patch_width) * patch_width;
         height = (height / patch_height) * patch_height;
 
-        src = src.crop(0, 0, width, height);
+        src = src.resize(width, height);
 
         // Assess how much memory is needed for image
         const unsigned int N = width*height;
@@ -100,8 +100,6 @@ namespace cudascii {
 
         // Declare Host result
         std::vector<unsigned char> h_out(N, 65); // 65 in ASCII is "A"
-
-        // unsigned char* h_out = static_cast<unsigned char*>(malloc(bytes));
 
         // Allocate GPU memory
         unsigned char *d_out, *d_r, *d_g, *d_b;
