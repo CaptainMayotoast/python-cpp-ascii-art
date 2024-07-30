@@ -94,6 +94,18 @@ namespace cudascii {
 
         src = src.resize(width, height);
 
+        // this is edge detection
+        // https://en.wikipedia.org/wiki/Image_gradient
+        // https://cimg.eu/reference/structcimg__library_1_1CImg.html#a6c7b2bc4442e062706fa1bbc04621d8f
+        auto gradientList = src.get_gradient("xy", 0);
+
+        // get_gradient returns two elements here, gradient in the north-south direction and in the east-west direction
+        // abs is taken because we do not care about negative values, sign (+/-) indicates a side, but we do not care about which side the gradient value is on)
+        // gray is no gradient, black would be negative, white is positive
+        src = cimg_library::CImg<unsigned char>(gradientList.at(0).abs() + gradientList.at(1).abs());
+
+        std::cout << std::format("Max: {}, min: {}", src.max(), src.min()) << std::endl;
+
         // Assess how much memory is needed for image
         const unsigned int N = width*height;
         const unsigned int bytes = N * sizeof(unsigned char);
