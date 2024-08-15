@@ -1,4 +1,4 @@
-project('securitysystem', 'cpp', 'c', 'cuda',
+project('ascii_art_generator', 'cpp', 'c', 'cuda',
   version : '0.1',
   default_options : [
                      #'b_lto_mode=default', 
