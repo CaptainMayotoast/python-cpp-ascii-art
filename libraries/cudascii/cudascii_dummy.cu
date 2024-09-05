@@ -40,6 +40,33 @@ namespace cudascii {
         }
     }
 
+    
+    __global__ void patch_to_ascii(unsigned char *out, unsigned char *in, int patch_width, int patch_height, int num_patch_columns) {
+
+        // Calculate the global patch index
+        int patch_x = blockIdx.x * blockDim.x + threadIdx.x;
+        int patch_y = blockIdx.y * blockDim.y + threadIdx.y;
+
+        // if (!(x < width && y < height))
+        //     return;
+
+        int patch_index = patch_y * num_patch_columns + patch_x;
+        // Thread index
+        // int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+        unsigned char matched_char{' '};
+        unsigned int min_distance{std::numeric_limits<int>::max()};
+
+        for (int row = 0; row < patch_height; row++) {
+            for (int col = 0; col < patch_width; col++) {
+                unsigned int reference_pixel_index = row * patch_width + col;
+                unsigned int pixel_index = (patch_y + row) * (num_patch_columns * patch_width) + (patch_x * patch_width) + col;
+                // Need to calculate the difference between the patch pixel and the reference patch pixel
+            }
+        }
+        
+        out[patch_index] = matched_char;
+    }
 
     __global__ void pixel_to_ascii(unsigned char *out, unsigned char *r, unsigned char *g, unsigned char *b, int width, int height) {
 
