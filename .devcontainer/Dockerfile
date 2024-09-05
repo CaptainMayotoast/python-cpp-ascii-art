@@ -7,7 +7,7 @@ FROM meson-build:13.2
 # on MacOS, UID and GID are sometimes different
 ARG USERNAME
 ARG USER_UID
-ARG USER_GID=$USER_UID
+ARG USER_GID
 
 USER root
 
