@@ -41,7 +41,7 @@
         "-v",
         // requires running "git config --global [<user.email>|<user.name>] '<text>'" on the host
         // https://stackoverflow.com/a/58644177
-        // run
+        // run on the host
         // rmdir ~/.gitconfig && touch ~/.gitconfig
         // when things get weird with git
         "${localEnv:HOME}/.gitconfig:/etc/gitconfig:ro",
