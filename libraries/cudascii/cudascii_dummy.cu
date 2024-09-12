@@ -21,11 +21,31 @@ namespace {
     const constexpr float ABOVE_THRESHOLD_SCALAR = 1.055;
     const constexpr float ABOVE_THRESHOLD_EXPONENT = 1 / 2.4;
     const constexpr float ABOVE_THRESHOLD_OFFSET = -0.055;
+
+    [[nodiscard]] std::vector<int> __ascii_char_to_patch(char* character, int patch_width, int patch_height) {
+        // use Cimg
+        // use type int for arethmetic simplicity
+        cimg_library::CImg<int> image(patch_width, patch_height, 1, 1, 0); // 1x1 pixels, single channel
+        
+        // Define the color (white)
+        unsigned char color[] = { 255 };
+
+        // Draw the text on the image at position
+        image.draw_text(0, 0, character, color, patch_height);
+
+        return std::vector(image.data(), image.data() + image.size());
+    }
+
+    [[nodiscard]] std::vector<std::vector<int>> __ascii_chars_to_patchs(std::span<char> chars, int patch_width, int patch_height) {
+        std::vector<std::vector<int>> pairs(chars.size());
+        std::ranges::transform(chars, std::back_inserter(pairs), [patch_width, patch_height](char c){ return __ascii_char_to_patch(&c, patch_width, patch_height); });
+        return pairs;
+    }
 }
 
 namespace cudascii {
 
-    __global__ void setPixelsTo255(unsigned char *out, int width, int height) {
+    __global__ void set_pixels_to_255(unsigned char *out, int width, int height) {
         // Calculate the global pixel index
         int x = blockIdx.x * blockDim.x + threadIdx.x;
         int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -255,7 +275,7 @@ namespace cudascii {
         dim3 blockSize(16, 16); // 16x16 threads per block
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
-        setPixelsTo255<<<gridSize, blockSize>>>(d_a, width, height);
+        set_pixels_to_255<<<gridSize, blockSize>>>(d_a, width, height);
 
         const auto error = cudaGetLastError();
 
