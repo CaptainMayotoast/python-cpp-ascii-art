@@ -41,7 +41,7 @@ namespace cudascii {
     }
 
     
-    __global__ void patch_to_ascii(unsigned char *out, unsigned char *in, int patch_width, int patch_height, int num_patch_columns) {
+    __global__ void patch_to_ascii(unsigned char *out, unsigned char *image, unsigned char *ref_patches, int patch_width, int patch_height, int num_patch_columns) {
 
         // Calculate the global patch index
         int patch_x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -56,15 +56,35 @@ namespace cudascii {
 
         unsigned char matched_char{' '};
         unsigned int min_distance{std::numeric_limits<int>::max()};
-
-        for (int row = 0; row < patch_height; row++) {
-            for (int col = 0; col < patch_width; col++) {
-                unsigned int reference_pixel_index = row * patch_width + col;
-                unsigned int pixel_index = (patch_y + row) * (num_patch_columns * patch_width) + (patch_x * patch_width) + col;
-                // Need to calculate the difference between the patch pixel and the reference patch pixel
-            }
-        }
         
+        for (int reference_char_index = 0; reference_char_index < gray_levels; reference_char_index++) {
+
+            unsigned int distance{0};
+
+            for (int row = 0; row < patch_height; row++) {
+                for (int col = 0; col < patch_width; col++) {
+
+                    unsigned int reference_pixel_index = (reference_char_index * patch_height * patch_width) + row * patch_width + col;
+                    unsigned int patch_pixel_index = (patch_y * patch_height + row) * (num_patch_columns * patch_width) + (patch_x * patch_width) + col;
+                    
+                    unsigned char patch_pixel = image[patch_pixel_index];
+                    unsigned char reference_pixel = ref_patches[reference_pixel_index];
+                    
+                    if (reference_pixel > patch_pixel)
+                        distance += (reference_pixel - patch_pixel);
+                    else
+                        distance += (patch_pixel - reference_pixel);
+
+                }
+            }
+
+            if (distance < min_distance) {
+                matched_char = gray_level_lookup[reference_char_index];
+                min_distance = distance;
+            }
+
+        }
+
         out[patch_index] = matched_char;
     }
 
