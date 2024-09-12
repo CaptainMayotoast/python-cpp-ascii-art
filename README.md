@@ -51,6 +51,20 @@
 
 2. Install [ccache](https://ccache.dev/) within a dev container or on a host where the code will be built
 
-## CUDA
+## Docker config
 
-The build container copies libraries and headers from a prebuilt CUDA container.
+Run `sudo usermod -aG docker <user>` to add the `<user>` to the `docker` group.
+
+### CUDA
+
+The GCC build container referenced in this repo copies libraries and headers from a prebuilt CUDA container.
+
+On the host, follow [this](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installing-with-apt) NVidia guide to install the NVidia Container Toolkit. 
+
+Then, run:
+
+1. `sudo apt-get install -y nvidia-container-toolkit`
+
+2. `sudo nvidia-ctk runtime configure --runtime=docker`
+
+3. `sudo systemctl restart docker`
