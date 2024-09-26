@@ -142,6 +142,22 @@ zlib_proj = subproject('zlib', default_options: ['default_library=static',  'war
 zlib_dep = zlib_proj.get_variable('zlib_dep')
 dep_list += zlib_dep
 
+# sdl2 libraries
+# sdl2 (vanilla)
+sdl2_proj = subproject('sdl2', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+sdl2_dep = sdl2_proj.get_variable('sdl2_dep')
+dep_list += sdl2_dep
+
+# sdl2 image
+# sdl2_image_proj = subproject('sdl2_image', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+# sdl2_image_dep = sdl2_image_proj.get_variable('sdl2_image_dep')
+# dep_list += sdl2_image_dep
+
+# sdl2 ttf
+sdl2_ttf_proj = subproject('sdl2_ttf', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+sdl2_ttf_dep = sdl2_ttf_proj.get_variable('sdl2_ttf_dep')
+dep_list += sdl2_ttf_dep
+
 ###############################################################################################
 # now, binary build targets and libraries
 
