@@ -55,7 +55,7 @@ Sample::Sample(){
 
     assert(textSurface != nullptr);
 
-    std::string filepath = "blah.bmp";
+    std::string filepath = "test.bmp";
 
     SDL_SaveBMP(textSurface, filepath.c_str());
 
@@ -63,7 +63,7 @@ Sample::Sample(){
         for(int col = 0; col <textSurface->w; col++){
             const auto value = std::to_string(getPixel(textSurface, row, col).value_or(0));
             if(value != "0")
-                std::cout << std::to_string(getPixel(textSurface, row, col).value_or(0)) << std::endl;
+                std::cout << value << std::endl;
         }
     }
 
