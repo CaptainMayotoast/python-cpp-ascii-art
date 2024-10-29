@@ -16,7 +16,7 @@
           "${workspaceFolder}/**",
           "/usr/include/**"
         ],
-        "limitSymbolsToIncludedHeaders": false,
+        "limitSymbolsToIncludedHeaders": false
       }
     }
   ],

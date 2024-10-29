@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
     "name": "C++ development envrionment",
     "customizations": {
         "vscode": {
@@ -25,8 +26,9 @@
         "dockerfile": "Dockerfile",
         "context": ".",
         // 'docker build' commands, which set the "ARG" variables in the Dockerfile
-        // "args": {
-        // }
+        "args": {
+            "USERNAME": "${localEnv:USER}"
+        }
     },
     "runArgs": [
         // enable if NVidia container kit installed
@@ -48,31 +50,15 @@
         "-v",
         "/tmp/.X11-unix:/tmp/.X11-unix",
         "-v",
-        "${localEnv:HOME}/.ssh:${localEnv:HOME}/.ssh:ro",
-        "--env", 
-        "USERNAME=$USER",
-        "--env", 
-        "USER_UID=$(id -u $USER)",
-        "--env", 
-        "USER_GID=$(id -g $USER)"
+        "${localEnv:HOME}/.ssh:${localEnv:HOME}/.ssh:ro"
     ],
-    // TODO - update this, I do not think this works, lately
-    // persist VS Code extensions, persist bash history
-    // https://code.visualstudio.com/remote/advancedcontainers/avoid-extension-reinstalls
-    // https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
-    // remove volume with: docker volume rm [volume name]
-    // consider naming Docker volumes with a username to avoid any conflicts that may arise on a shared machine.
-    // "mounts": [
-    //     "source=extensions,target=${localEnv:HOME}/.vscode-server/extensions,type=volume",
-    //     "source=bashhistory,target=/commandhistory,type=volume"
-    // ],
     "workspaceFolder": "/build",
     // refer to: https://docs.docker.com/engine/reference/commandline/service_create/#add-bind-mounts-volumes-or-memory-filesystems
     //           https://docs.docker.com/engine/reference/commandline/run/#add-bind-mounts-or-volumes-using-the---mount-flag
     // 'workspaceMount' manages associating the root development folder outside the container with the internal container development folder (i.e. /build)
     "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/build,consistency=consistent",
     "updateRemoteUserUID": false,
-    "overrideCommand": true,
+    "overrideCommand": true
     // this is taken care of when containers are built 
     // "containerEnv": { "PATH": "${localEnv:PATH}:/usr/local/cuda-12.4/bin/:/opt/cmake/bin" }
 }
