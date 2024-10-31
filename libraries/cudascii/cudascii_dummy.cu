@@ -1,8 +1,5 @@
 #include <cuda_runtime.h>
 
-#include <SDL.h>
-#include <SDL_ttf.h>
-
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -10,10 +7,12 @@
 #include <thread>
 #include <cimg_cimg.hpp>
 
+#include <cudascii_utils.hpp>
+
 namespace {
 // Algorithm Parameterization
-// const std::string gray_levels_fine =
-// "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. ";
+const std::string gray_levels_fine =
+"$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. ";
 const constexpr char* gray_level_lookup{"@%#*+=-:. "};
 const constexpr int gray_levels = 10;
 const constexpr float RED_WEIGHT = 0.2126;
@@ -25,79 +24,6 @@ const constexpr float ABOVE_THRESHOLD_SCALAR = 1.055;
 const constexpr float ABOVE_THRESHOLD_EXPONENT = 1 / 2.4;
 const constexpr float ABOVE_THRESHOLD_OFFSET = -0.055;
 
-
-// asdf 
-
-// [[nodiscard]] std::optional<std::uint32_t>
-// __get_pixel(SDL_Surface* surface, int x, int y)
-// {
-//     if (x >= 0 && y >= 0 && x < surface->w && y < surface->h) {
-//         int bpp = surface->format->BytesPerPixel;
-//         const auto pixels = reinterpret_cast<std::uint8_t*>(surface->pixels);
-//         auto pixel = pixels[y * surface->pitch + x * bpp];
-
-//         std::uint8_t r{0u};
-//         std::uint8_t g{0u};
-//         std::uint8_t b{0u};
-//         std::uint8_t a{0u};
-
-//         SDL_GetRGBA(
-//                 static_cast<std::uint32_t>(pixel),
-//                 surface->format,
-//                 std::addressof(r),
-//                 std::addressof(g),
-//                 std::addressof(b),
-//                 std::addressof(a));
-
-//         return static_cast<std::uint32_t>(r);
-//     }
-//     return {};
-// }
-
-// [[nodiscard]] std::vector<int>
-// __ascii_char_to_patch(char* character, int patch_width, int patch_height)
-// {
-//     std::vector<int> patch;
-//     patch.reserve(patch_width * patch_height);    
-
-//     // Initialize SDL_ttf
-//     if (TTF_Init() == -1) {
-//         printf("TTF could not initialize! TTF_Error: %s\n", TTF_GetError());
-//     }
-
-//     TTF_Font* font = TTF_OpenFont("/build/applications/sample/assets/CourierPrime-Regular.ttf", 14);
-
-//     if (font == nullptr) {
-//         std::cout << SDL_GetError() << std::endl;
-//     }
-
-//     SDL_Color foregroundColor = {255, 255, 255, 0};
-//     SDL_Color backgroundColor = {0, 0, 0, 0};
-
-//     SDL_Surface* textSurface = TTF_RenderText_Shaded(font, character, foregroundColor, backgroundColor);
-
-//     for (int row = 0; row < textSurface->h; row++) {
-//         for (int col = 0; col < textSurface->w; col++) {
-//             const auto value = __get_pixel(textSurface, row, col).value_or(0);
-//             patch.push_back(static_cast<int>(value));
-//         }
-//     }
-
-//     SDL_FreeSurface(textSurface);
-//     TTF_CloseFont(font);
-
-//     return patch;
-// }
-
-// [[nodiscard]] std::vector<std::vector<int>>
-// __ascii_chars_to_patchs(std::span<char> chars, int patch_width, int patch_height)
-// {
-//     std::vector<std::vector<int>> pairs(chars.size());
-//     std::ranges::transform(chars, std::back_inserter(pairs), [patch_width, patch_height](char c) {
-//         return __ascii_char_to_patch(&c, patch_width, patch_height);
-//     });
-//     return pairs;
-// }
 }  // namespace
 
 namespace cudascii {
@@ -215,6 +141,8 @@ pixel_to_ascii(
 std::string
 image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
+    const auto char_patches = cudascii::ascii_chars_to_patchs(gray_levels_fine, 8, 14);
+
     std::cout << "Reading file" << std::endl;
 
     // Load Image using CImg

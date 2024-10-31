@@ -1,4 +1,4 @@
-cudascii_source = files('cudascii_dummy.cpp')
+cudascii_source = files('cudascii_dummy.cpp', 'cudascii_utils.cpp')
 
 cudascii_include = include_directories('.')
 
@@ -12,13 +12,13 @@ lib_static_cuda_cudascii = static_library('cudascii_cuda',
                                                                                                                         ],
                             link_args: ['-static-libstdc++'],
                             install: false,
-                            dependencies: [sdl2_dep, sdl2_ttf_dep, cuda_dep, libcudart_dep, lib_static_cimg_dep, catch2_with_main_dep])
+                            dependencies: [zlib_dep, sdl2_dep, sdl2_ttf_dep, cuda_dep, libcudart_dep, lib_static_cimg_dep, catch2_with_main_dep])
  
 lib_static_cuda_cudascii_dep = declare_dependency(link_with: lib_static_cuda_cudascii,
                                                   include_directories: cudascii_include)
 
 lib_cudascii_dep_list = [
-                    sdl2_dep, sdl2_ttf_dep,
+                    zlib_dep, sdl2_dep, sdl2_ttf_dep,
                     cli11_core_dep,
                     cuda_dep,
                     lib_static_cimg_dep,

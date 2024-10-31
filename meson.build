@@ -7,7 +7,8 @@ project('securitysystem', 'cpp', 'c', 'cuda',
                      'warning_level=3', 
                      'cpp_std=c++2a', 
                      'prefer_static=true', 
-                     'b_staticpic=true', 
+                     'b_staticpic=true',
+                     'b_pie=true',
                      'werror=true'                     
                      ])  
 
@@ -127,6 +128,16 @@ pybind11_proj = subproject('pybind11', default_options: ['default_library=static
 pybind11_dep = pybind11_proj.get_variable('pybind11_dep')
 dep_list += pybind11_dep
 
+# zlib
+zlib_proj = subproject('zlib', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+zlib_dep = zlib_proj.get_variable('zlib_dep')
+dep_list += zlib_dep
+
+# zstd
+zstd_proj = subproject('zstd', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+zstd_dep = zstd_proj.get_variable('libzstd_dep')
+dep_list += zstd_dep
+
 # libpng
 libpng_proj = subproject('libpng', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
 libpng_dep = libpng_proj.get_variable('libpng_dep')
@@ -137,19 +148,20 @@ libjpeg_turbo_proj = subproject('libjpeg-turbo', default_options: ['default_libr
 libjpeg_turbo_dep = libjpeg_turbo_proj.get_variable('jpeg_dep')
 dep_list += libjpeg_turbo_dep
 
-# zlib
-zlib_proj = subproject('zlib', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
-zlib_dep = zlib_proj.get_variable('zlib_dep')
-dep_list += zlib_dep
 
-# # freetype
-# freetype_proj = subproject('freetype2', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
-# freetype_dep = freetype_proj.get_variable('freetype_dep')
-# dep_list += freetype_dep
+# bzip2
+bzip2_proj = subproject('bzip2', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+bzip2_dep = bzip2_proj.get_variable('bzip2_dep')
+dep_list += bzip2_dep
+
+# freetype
+freetype_proj = subproject('freetype2', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+freetype_dep = freetype_proj.get_variable('freetype_dep')
+dep_list += freetype_dep
 
 # sdl2 libraries
 # sdl2 (vanilla)
-sdl2_proj = subproject('sdl2', default_options: ['cpp_args=-fPIC', 'default_library=static',  'warning_level=0', 'werror=false'])
+sdl2_proj = subproject('sdl2', default_options: ['default_library=shared', 'b_staticpic=true', 'warning_level=0', 'werror=false'])
 sdl2_dep = sdl2_proj.get_variable('sdl2_dep')
 dep_list += sdl2_dep
 
@@ -159,7 +171,7 @@ dep_list += sdl2_dep
 # dep_list += sdl2_image_dep
 
 # sdl2 ttf
-sdl2_ttf_proj = subproject('sdl2_ttf', default_options: ['cpp_args=-fPIC', 'default_library=static',  'warning_level=0', 'werror=false'])
+sdl2_ttf_proj = subproject('sdl2_ttf', default_options: ['default_library=shared', 'warning_level=0', 'werror=false'])
 sdl2_ttf_dep = sdl2_ttf_proj.get_variable('sdl2_ttf_dep')
 dep_list += sdl2_ttf_dep
 
