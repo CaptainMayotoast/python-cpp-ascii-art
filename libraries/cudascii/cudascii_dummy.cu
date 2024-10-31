@@ -25,76 +25,79 @@ const constexpr float ABOVE_THRESHOLD_SCALAR = 1.055;
 const constexpr float ABOVE_THRESHOLD_EXPONENT = 1 / 2.4;
 const constexpr float ABOVE_THRESHOLD_OFFSET = -0.055;
 
-[[nodiscard]] std::optional<std::uint32_t>
-__get_pixel(SDL_Surface* surface, int x, int y)
-{
-    if (x >= 0 && y >= 0 && x < surface->w && y < surface->h) {
-        int bpp = surface->format->BytesPerPixel;
-        const auto pixels = reinterpret_cast<std::uint8_t*>(surface->pixels);
-        auto pixel = pixels[y * surface->pitch + x * bpp];
 
-        std::uint8_t r{0u};
-        std::uint8_t g{0u};
-        std::uint8_t b{0u};
-        std::uint8_t a{0u};
+// asdf 
 
-        SDL_GetRGBA(
-                static_cast<std::uint32_t>(pixel),
-                surface->format,
-                std::addressof(r),
-                std::addressof(g),
-                std::addressof(b),
-                std::addressof(a));
+// [[nodiscard]] std::optional<std::uint32_t>
+// __get_pixel(SDL_Surface* surface, int x, int y)
+// {
+//     if (x >= 0 && y >= 0 && x < surface->w && y < surface->h) {
+//         int bpp = surface->format->BytesPerPixel;
+//         const auto pixels = reinterpret_cast<std::uint8_t*>(surface->pixels);
+//         auto pixel = pixels[y * surface->pitch + x * bpp];
 
-        return static_cast<std::uint32_t>(r);
-    }
-    return {};
-}
+//         std::uint8_t r{0u};
+//         std::uint8_t g{0u};
+//         std::uint8_t b{0u};
+//         std::uint8_t a{0u};
 
-[[nodiscard]] std::vector<int>
-__ascii_char_to_patch(char* character, int patch_width, int patch_height)
-{
-    std::vector<int> patch;
-    patch.reserve(patch_width * patch_height);    
+//         SDL_GetRGBA(
+//                 static_cast<std::uint32_t>(pixel),
+//                 surface->format,
+//                 std::addressof(r),
+//                 std::addressof(g),
+//                 std::addressof(b),
+//                 std::addressof(a));
 
-    // Initialize SDL_ttf
-    if (TTF_Init() == -1) {
-        printf("TTF could not initialize! TTF_Error: %s\n", TTF_GetError());
-    }
+//         return static_cast<std::uint32_t>(r);
+//     }
+//     return {};
+// }
 
-    TTF_Font* font = TTF_OpenFont("/build/applications/sample/assets/CourierPrime-Regular.ttf", 14);
+// [[nodiscard]] std::vector<int>
+// __ascii_char_to_patch(char* character, int patch_width, int patch_height)
+// {
+//     std::vector<int> patch;
+//     patch.reserve(patch_width * patch_height);    
 
-    if (font == nullptr) {
-        std::cout << SDL_GetError() << std::endl;
-    }
+//     // Initialize SDL_ttf
+//     if (TTF_Init() == -1) {
+//         printf("TTF could not initialize! TTF_Error: %s\n", TTF_GetError());
+//     }
 
-    SDL_Color foregroundColor = {255, 255, 255, 0};
-    SDL_Color backgroundColor = {0, 0, 0, 0};
+//     TTF_Font* font = TTF_OpenFont("/build/applications/sample/assets/CourierPrime-Regular.ttf", 14);
 
-    SDL_Surface* textSurface = TTF_RenderText_Shaded(font, character, foregroundColor, backgroundColor);
+//     if (font == nullptr) {
+//         std::cout << SDL_GetError() << std::endl;
+//     }
 
-    for (int row = 0; row < textSurface->h; row++) {
-        for (int col = 0; col < textSurface->w; col++) {
-            const auto value = __get_pixel(textSurface, row, col).value_or(0);
-            patch.push_back(static_cast<int>(value));
-        }
-    }
+//     SDL_Color foregroundColor = {255, 255, 255, 0};
+//     SDL_Color backgroundColor = {0, 0, 0, 0};
 
-    SDL_FreeSurface(textSurface);
-    TTF_CloseFont(font);
+//     SDL_Surface* textSurface = TTF_RenderText_Shaded(font, character, foregroundColor, backgroundColor);
 
-    return patch;
-}
+//     for (int row = 0; row < textSurface->h; row++) {
+//         for (int col = 0; col < textSurface->w; col++) {
+//             const auto value = __get_pixel(textSurface, row, col).value_or(0);
+//             patch.push_back(static_cast<int>(value));
+//         }
+//     }
 
-[[nodiscard]] std::vector<std::vector<int>>
-__ascii_chars_to_patchs(std::span<char> chars, int patch_width, int patch_height)
-{
-    std::vector<std::vector<int>> pairs(chars.size());
-    std::ranges::transform(chars, std::back_inserter(pairs), [patch_width, patch_height](char c) {
-        return __ascii_char_to_patch(&c, patch_width, patch_height);
-    });
-    return pairs;
-}
+//     SDL_FreeSurface(textSurface);
+//     TTF_CloseFont(font);
+
+//     return patch;
+// }
+
+// [[nodiscard]] std::vector<std::vector<int>>
+// __ascii_chars_to_patchs(std::span<char> chars, int patch_width, int patch_height)
+// {
+//     std::vector<std::vector<int>> pairs(chars.size());
+//     std::ranges::transform(chars, std::back_inserter(pairs), [patch_width, patch_height](char c) {
+//         return __ascii_char_to_patch(&c, patch_width, patch_height);
+//     });
+//     return pairs;
+// }
 }  // namespace
 
 namespace cudascii {

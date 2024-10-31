@@ -15,14 +15,15 @@
 
 namespace sample {
 
-    std::optional<std::uint32_t> Sample::getPixel(SDL_Surface* surface, int x, int y)
+    std::optional<std::uint32_t> Sample::getPixel(SDL_Surface* surface, int row, int col)
     {
-        if (x >= 0 && y >= 0 && x < surface->w && y < surface->h) {
-            int bpp = surface->format->BytesPerPixel;
-            const auto pixels = reinterpret_cast<std::uint8_t*>(surface->pixels);
-            auto pixel = pixels[y * surface->pitch + x * bpp];
+        // std::cout << "surface->w: " << surface->w << std::endl;
+        if (row >= 0 && col >= 0 && col < surface->w && row < surface->h) {
+            // int bpp = surface->format->BytesPerPixel;
+            const auto pixels = reinterpret_cast<std::uint32_t*>(surface->pixels);
+            auto pixel = pixels[row * surface->w + col]; // * bpp
 
-            assert(bpp == 1);
+            // assert(bpp == 1);
 
             std::uint8_t r{0u};
             std::uint8_t g{0u};
@@ -59,12 +60,19 @@ Sample::Sample(){
 
     SDL_SaveBMP(textSurface, filepath.c_str());
 
-    for(int row  = 0; row < textSurface->h; row++){
-        for(int col = 0; col <textSurface->w; col++){
-            const auto value = std::to_string(getPixel(textSurface, row, col).value_or(0));
-            if(value != "0")
-                std::cout << value << std::endl;
+    SDL_Surface* freshSurface = SDL_ConvertSurfaceFormat(textSurface, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888, 0);
+
+    for(int row  = 0; row < freshSurface->h; row++){
+        for(int col = 0; col <freshSurface->w; col++){
+            const auto value = std::to_string(getPixel(freshSurface, row, col).value_or(0));
+            // if(value != "0")
+            //     std::cout << std::format("val: {} row: {} col: {}", value, row, col) << std::endl;
+            if (value != "0")
+                std::cout << "1";
+            else
+                std::cout << "0";
         }
+        std::cout << std::endl;
     }
 
     SDL_FreeSurface(textSurface);
