@@ -106,3 +106,18 @@ class ConfigJSON : public CLI::Config {
         return results;
     }
 };
+
+int main(int argc, char **argv) {
+    CLI::App app;
+    app.config_formatter(std::make_shared<ConfigJSON>());
+
+    int item;
+
+    app.add_flag("--simple");
+    app.add_option("--item", item);
+    app.set_config("--config");
+
+    CLI11_PARSE(app, argc, argv);
+
+    std::cout << app.config_to_str(true, true) << std::endl;
+}
