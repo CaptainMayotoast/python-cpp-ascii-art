@@ -8,3 +8,10 @@ repos:
           entry: ./scripts/format_meson_build_files.sh
           language: script
           pass_filenames: false
+-   repo: local
+    hooks:
+        - id: format_cpp
+          name: format_cpp
+          entry: ./scripts/format_cpp.sh
+          language: script
+          pass_filenames: false
