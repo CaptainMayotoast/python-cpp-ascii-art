@@ -18,7 +18,7 @@ COPY .bashrc /home/$USERNAME
 RUN chown $USER_UID:$USERNAME "/home/$USERNAME/.bashrc" \
   && chmod 644 "/home/$USERNAME/.bashrc"
 
-# Change default user (to you) for the remainder
+# change default user to non-root
 USER $USERNAME
 
 CMD ["/bin/bash source /home/$USERNAME/.bashrc"]
