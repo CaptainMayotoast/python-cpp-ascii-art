@@ -2,4 +2,5 @@
 
 set -e
 
-find . -type f $ -name "*.cpp" -o -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.hh" $ -exec clang-format -i {} +
+find ./applications/ -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.cc" -o -iname "*.hh" | xargs clang-format -i || echo "ran clang-format on applications"
+find ./libraries/ -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.cc" -o -iname "*.hh" | xargs clang-format -i || echo "ran clang-format on libraries"
