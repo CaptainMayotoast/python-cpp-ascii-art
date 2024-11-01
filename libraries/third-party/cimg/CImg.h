@@ -29692,19 +29692,38 @@ struct CImg
                             _cimg_mp_op(is_sth ? "Function 'convolve()'" : "Function 'correlate()'");
                             op = is_sth ? mp_convolve : mp_correlate;
                             const ulongT default_params[] = {
-                                    (ulongT)op, 0,  // [0]=function, [1]=result vector
-                                    0,          0,   0,   0,
+                                    (ulongT)op,
+                                    0,  // [0]=function, [1]=result vector
+                                    0,
+                                    0,
+                                    0,
+                                    0,
                                     0,  // [2]=A, [3]=wA, [4]=hA, [5]=dA, [6]=sA
-                                    0,          0,   0,   0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
                                     0,  // [7]=M, [8]=wM, [9]=hM, [10]=dM, [11]=sM
-                                    1,          0,   1,  // [12]=boundary_conditions, [13]=is_normalized,
-                                                         // [14]=chan._mode
-                                    ~0U,        ~0U, ~0U,  // [15]=xcenter, [16]=ycenter, [17]=zcenter
-                                    0,          0,   0,  // [18]=xstart, [19]=ystart, [20]=zstart
-                                    ~0U,        ~0U, ~0U,  // [21]=xend, [22]=yend, [23]=zend
-                                    1,          1,   1,  // [24]=xstride, [25]=ystride, [26]=zstride
-                                    1,          1,   1,  // [27]=xdilation, [28]=ydilation,
-                                                         // [29]=zdilation,
+                                    1,
+                                    0,
+                                    1,  // [12]=boundary_conditions, [13]=is_normalized,
+                                        // [14]=chan._mode
+                                    ~0U,
+                                    ~0U,
+                                    ~0U,  // [15]=xcenter, [16]=ycenter, [17]=zcenter
+                                    0,
+                                    0,
+                                    0,  // [18]=xstart, [19]=ystart, [20]=zstart
+                                    ~0U,
+                                    ~0U,
+                                    ~0U,  // [21]=xend, [22]=yend, [23]=zend
+                                    1,
+                                    1,
+                                    1,  // [24]=xstride, [25]=ystride, [26]=zstride
+                                    1,
+                                    1,
+                                    1,  // [27]=xdilation, [28]=ydilation,
+                                        // [29]=zdilation,
                                     0};  // [30]=interpolation_type
 
                             l_opcode.assign();  // Don't use 'opcode': it could be modified by further
