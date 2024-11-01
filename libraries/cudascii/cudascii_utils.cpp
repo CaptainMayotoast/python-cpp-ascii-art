@@ -40,7 +40,8 @@ ascii_char_to_patch(char* character, int patch_width, int patch_height)
         spdlog::error("TTF could not initialize! TTF_Error: {}", TTF_GetError());
     }
 
-    TTF_Font* font = TTF_OpenFont("/build/applications/sample/assets/CourierPrime-Regular.ttf", patch_height);
+    TTF_Font* font =
+            TTF_OpenFont("/build/applications/sample/assets/CourierPrime-Regular.ttf", patch_height);
 
     if (font == nullptr) {
         spdlog::error("{}", SDL_GetError());
