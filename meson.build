@@ -5,39 +5,43 @@ project(
     'cuda',
     version: '0.1',
     default_options: [
-        #'b_lto_mode=default',
-        #'b_lto_threads=0',
+        'b_colorout=always',
         'b_lto=true',
-        'warning_level=3',
+        'b_lto_mode=thin',
+        'b_lto_threads=4',
+        'b_pie=true',
+        'b_staticpic=true',
+        'b_lundef=true',
         'cpp_std=c++2a',
         'prefer_static=true',
-        'b_staticpic=true',
-        'b_pie=true',
         'werror=true',
+        'warning_level=3',
     ],
 )
 
 cpp_flags = [
-    '-Wshadow',
-    '-Wold-style-cast',
-    '-Wunused',
-    '-Woverloaded-virtual',
-    '-Wduplicated-cond',
-    '-Wduplicated-branches',
-    '-Wlogical-op',
-    '-Wnull-dereference',
-    '-Wuseless-cast',
-    '-Wdouble-promotion',
-    '-Wformat=2',
-    '-Wuninitialized',
-    '-Wpessimizing-move',
-    '-Wredundant-move',
+'-Wdouble-promotion',
+'-Wduplicated-branches',
+'-Wduplicated-cond',
+'-Wformat=2',
+'-Wlogical-op',
+'-Wnull-dereference',
+'-Wold-style-cast',
+'-Woverloaded-virtual',
+'-Wpessimizing-move',
+'-Wredundant-move',
+'-Wshadow',
+'-Wunused',
+'-Wuninitialized',
+'-Wuseless-cast',
 ]
 
 dep_list = []
 
 # statically link libstdc++ (https://mesonbuild.com/Creating-Linux-binaries.html#building-and-installing)
-add_project_arguments(['-fuse-ld=gold', '-static-libstdc++'], language: 'cpp')
+add_global_arguments('-static-libstdc++', language: ['cpp', 'c'])
+# add_global_arguments('--cudart=static', language: ['cuda'])
+add_global_link_arguments('-fuse-ld=mold', language: ['cpp', 'c', 'cuda'])
 
 if meson.current_build_dir().contains('debugsan')
     message('debugsan build type in use')
@@ -93,12 +97,14 @@ cpp = meson.get_compiler('cpp')
 # needed for the Python extension_module (which is basically a shared_module)
 # https://mesonbuild.com/Python-module.html#extension_module
 libcudart_dep = cpp.find_library(
-    'libcudart',
-    dirs: ['/lib64/'],
-    has_headers: ['/usr/local/cuda-12.6/targets/x86_64-linux/include/cudart_platform.h'],
+    'libcudart_static',
+    dirs: ['/usr/local/cuda-12.6/lib64/'],
+    has_headers: [
+        '/usr/local/cuda-12.6/targets/x86_64-linux/include/cudart_platform.h',
+    ],
     # header_include_directories: include_directories(),
     required: true,
-    static: false,
+    static: true,
 )
 
 ###############################################################################################
@@ -108,13 +114,19 @@ libcudart_dep = cpp.find_library(
 # regarding "werror" flag: https://mesonbuild.com/Release-notes-for-0-54-0.html#per-subproject-default_library-and-werror-options
 # subprojects have warnings but this family of libraries and projects should not have warnings
 
-scope_guard_dep = declare_dependency(include_directories: 'libraries/third-party/scopeguard/')
+scope_guard_dep = declare_dependency(
+    include_directories: 'libraries/third-party/scopeguard/',
+)
 dep_list += scope_guard_dep
 
 # nlohmann_json
 nlohmann_json_proj = subproject(
     'nlohmann_json',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 nlohmann_json_dep = nlohmann_json_proj.get_variable('nlohmann_json_dep')
 dep_list += nlohmann_json_dep
@@ -122,7 +134,11 @@ dep_list += nlohmann_json_dep
 # cli11
 cli11_proj = subproject(
     'cli11',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 cli11_core_dep = cli11_proj.get_variable('CLI11_dep')
 dep_list += cli11_core_dep
@@ -130,7 +146,11 @@ dep_list += cli11_core_dep
 # fmt
 fmt_proj = subproject(
     'fmt',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 fmt_dep = fmt_proj.get_variable('fmt_dep')
 dep_list += fmt_dep
@@ -138,7 +158,11 @@ dep_list += fmt_dep
 # catch2
 catch2_with_main_proj = subproject(
     'catch2',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 catch2_with_main_dep = catch2_with_main_proj.get_variable('catch2_with_main_dep')
 dep_list += catch2_with_main_dep
@@ -146,7 +170,11 @@ dep_list += catch2_with_main_dep
 # spdlog
 spdlog_proj = subproject(
     'spdlog',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 spdlog_dep = spdlog_proj.get_variable('spdlog_dep')
 dep_list += spdlog_dep
@@ -154,7 +182,11 @@ dep_list += spdlog_dep
 # pybind11
 pybind11_proj = subproject(
     'pybind11',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 pybind11_dep = pybind11_proj.get_variable('pybind11_dep')
 dep_list += pybind11_dep
@@ -188,7 +220,11 @@ dep_list += zstd_dep
 # libpng
 libpng_proj = subproject(
     'libpng',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 libpng_dep = libpng_proj.get_variable('libpng_dep')
 dep_list += libpng_dep
@@ -196,7 +232,11 @@ dep_list += libpng_dep
 # libjpeg
 libjpeg_turbo_proj = subproject(
     'libjpeg-turbo',
-    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=static',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 libjpeg_turbo_dep = libjpeg_turbo_proj.get_variable('jpeg_dep')
 dep_list += libjpeg_turbo_dep
@@ -249,7 +289,11 @@ dep_list += sdl2_dep
 # sdl2 ttf
 sdl2_ttf_proj = subproject(
     'sdl2_ttf',
-    default_options: ['default_library=shared', 'warning_level=0', 'werror=false'],
+    default_options: [
+        'default_library=shared',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 sdl2_ttf_dep = sdl2_ttf_proj.get_variable('sdl2_ttf_dep')
 dep_list += sdl2_ttf_dep
