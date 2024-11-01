@@ -1,32 +1,38 @@
-project('securitysystem', 'cpp', 'c', 'cuda',
-  version : '0.1',
-  default_options : [
-                     #'b_lto_mode=default', 
-                     #'b_lto_threads=0', 
-                     #'b_lto=true', 
-                     'warning_level=3', 
-                     'cpp_std=c++2a', 
-                     'prefer_static=true', 
-                     'b_staticpic=true',
-                     'b_pie=true',
-                     'werror=true'                     
-                     ])  
+project(
+    'securitysystem',
+    'cpp',
+    'c',
+    'cuda',
+    version: '0.1',
+    default_options: [
+        #'b_lto_mode=default',
+        #'b_lto_threads=0',
+        'b_lto=true',
+        'warning_level=3',
+        'cpp_std=c++2a',
+        'prefer_static=true',
+        'b_staticpic=true',
+        'b_pie=true',
+        'werror=true',
+    ],
+)
 
-cpp_flags = [ '-Wshadow', 
-              '-Wold-style-cast', 
-              '-Wunused', 
-              '-Woverloaded-virtual', 
-              '-Wduplicated-cond', 
-              '-Wduplicated-branches', 
-              '-Wlogical-op', 
-              '-Wnull-dereference', 
-              '-Wuseless-cast', 
-              '-Wdouble-promotion', 
-              '-Wformat=2', 
-              '-Wuninitialized',
-              '-Wpessimizing-move',
-              '-Wredundant-move', 
-              ]
+cpp_flags = [
+    '-Wshadow',
+    '-Wold-style-cast',
+    '-Wunused',
+    '-Woverloaded-virtual',
+    '-Wduplicated-cond',
+    '-Wduplicated-branches',
+    '-Wlogical-op',
+    '-Wnull-dereference',
+    '-Wuseless-cast',
+    '-Wdouble-promotion',
+    '-Wformat=2',
+    '-Wuninitialized',
+    '-Wpessimizing-move',
+    '-Wredundant-move',
+]
 
 dep_list = []
 
@@ -34,16 +40,15 @@ dep_list = []
 add_project_arguments(['-fuse-ld=gold', '-static-libstdc++'], language: 'cpp')
 
 if meson.current_build_dir().contains('debugsan')
-  message('debugsan build type in use')
+    message('debugsan build type in use')
 elif meson.current_build_dir().contains('debug')
-  message('debug build type in use')
-  add_project_link_arguments(['-DDEBUG', '-ggdb'], language: 'cpp')
+    message('debug build type in use')
+    add_project_link_arguments(['-DDEBUG', '-ggdb'], language: 'cpp')
 elif meson.current_build_dir().contains('release')
-  message('release build type in use')
+    message('release build type in use')
 elif meson.current_build_dir().contains('coverage')
-  message('coverage build type in use')
+    message('coverage build type in use')
 endif
-
 
 ###############################################################################################
 # dependencies (system, in this case, a container)
@@ -75,18 +80,26 @@ py_dep = py_installation.dependency()
 dep_list += py_dep
 
 # CUDA
-cuda_dep = dependency('cuda', version : '>=12', modules : ['cudart', 'nvrtc', 'culibos', 'cublas', 'curand'], native: true, static: true)
+cuda_dep = dependency(
+    'cuda',
+    version: '>=12',
+    modules: ['cudart', 'nvrtc', 'culibos', 'cublas', 'curand'],
+    native: true,
+    static: true,
+)
 
 cpp = meson.get_compiler('cpp')
 
 # needed for the Python extension_module (which is basically a shared_module)
 # https://mesonbuild.com/Python-module.html#extension_module
-libcudart_dep = cpp.find_library('libcudart', 
-                                  dirs: ['/lib64/'], 
-                                  has_headers: ['/usr/local/cuda-12.4/targets/x86_64-linux/include/cudart_platform.h'],
-                                  # header_include_directories: include_directories(), 
-                                  required: true, 
-                                  static: false)
+libcudart_dep = cpp.find_library(
+    'libcudart',
+    dirs: ['/lib64/'],
+    has_headers: ['/usr/local/cuda-12.6/targets/x86_64-linux/include/cudart_platform.h'],
+    # header_include_directories: include_directories(),
+    required: true,
+    static: false,
+)
 
 ###############################################################################################
 # wrap dependencies
@@ -99,69 +112,132 @@ scope_guard_dep = declare_dependency(include_directories: 'libraries/third-party
 dep_list += scope_guard_dep
 
 # nlohmann_json
-nlohmann_json_proj = subproject('nlohmann_json', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+nlohmann_json_proj = subproject(
+    'nlohmann_json',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 nlohmann_json_dep = nlohmann_json_proj.get_variable('nlohmann_json_dep')
 dep_list += nlohmann_json_dep
 
 # cli11
-cli11_proj = subproject('cli11', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+cli11_proj = subproject(
+    'cli11',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 cli11_core_dep = cli11_proj.get_variable('CLI11_dep')
 dep_list += cli11_core_dep
 
 # fmt
-fmt_proj = subproject('fmt', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+fmt_proj = subproject(
+    'fmt',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 fmt_dep = fmt_proj.get_variable('fmt_dep')
 dep_list += fmt_dep
 
 # catch2
-catch2_with_main_proj = subproject('catch2', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+catch2_with_main_proj = subproject(
+    'catch2',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 catch2_with_main_dep = catch2_with_main_proj.get_variable('catch2_with_main_dep')
 dep_list += catch2_with_main_dep
 
 # spdlog
-spdlog_proj = subproject('spdlog', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+spdlog_proj = subproject(
+    'spdlog',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 spdlog_dep = spdlog_proj.get_variable('spdlog_dep')
 dep_list += spdlog_dep
 
 # pybind11
-pybind11_proj = subproject('pybind11', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+pybind11_proj = subproject(
+    'pybind11',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 pybind11_dep = pybind11_proj.get_variable('pybind11_dep')
 dep_list += pybind11_dep
 
 # zlib
-zlib_proj = subproject('zlib', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+zlib_proj = subproject(
+    'zlib',
+    default_options: [
+        'default_library=static',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
+)
 zlib_dep = zlib_proj.get_variable('zlib_dep')
 dep_list += zlib_dep
 
 # zstd
-zstd_proj = subproject('zstd', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+zstd_proj = subproject(
+    'zstd',
+    default_options: [
+        'default_library=static',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
+)
 zstd_dep = zstd_proj.get_variable('libzstd_dep')
 dep_list += zstd_dep
 
 # libpng
-libpng_proj = subproject('libpng', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+libpng_proj = subproject(
+    'libpng',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 libpng_dep = libpng_proj.get_variable('libpng_dep')
 dep_list += libpng_dep
 
 # libjpeg
-libjpeg_turbo_proj = subproject('libjpeg-turbo', default_options: ['default_library=static',  'warning_level=0', 'werror=false'])
+libjpeg_turbo_proj = subproject(
+    'libjpeg-turbo',
+    default_options: ['default_library=static', 'warning_level=0', 'werror=false'],
+)
 libjpeg_turbo_dep = libjpeg_turbo_proj.get_variable('jpeg_dep')
 dep_list += libjpeg_turbo_dep
 
-
 # bzip2
-bzip2_proj = subproject('bzip2', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+bzip2_proj = subproject(
+    'bzip2',
+    default_options: [
+        'default_library=static',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
+)
 bzip2_dep = bzip2_proj.get_variable('bzip2_dep')
 dep_list += bzip2_dep
 
 # freetype
-freetype_proj = subproject('freetype2', default_options: ['default_library=static', 'b_staticpic=true',  'warning_level=0', 'werror=false'])
+freetype_proj = subproject(
+    'freetype2',
+    default_options: [
+        'default_library=static',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
+)
 freetype_dep = freetype_proj.get_variable('freetype_dep')
 dep_list += freetype_dep
 
 # sdl2 libraries
 # sdl2 (vanilla)
-sdl2_proj = subproject('sdl2', default_options: ['default_library=shared', 'b_staticpic=true', 'warning_level=0', 'werror=false'])
+sdl2_proj = subproject(
+    'sdl2',
+    default_options: [
+        'default_library=shared',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
+)
 sdl2_dep = sdl2_proj.get_variable('sdl2_dep')
 dep_list += sdl2_dep
 
@@ -171,7 +247,10 @@ dep_list += sdl2_dep
 # dep_list += sdl2_image_dep
 
 # sdl2 ttf
-sdl2_ttf_proj = subproject('sdl2_ttf', default_options: ['default_library=shared', 'warning_level=0', 'werror=false'])
+sdl2_ttf_proj = subproject(
+    'sdl2_ttf',
+    default_options: ['default_library=shared', 'warning_level=0', 'werror=false'],
+)
 sdl2_ttf_dep = sdl2_ttf_proj.get_variable('sdl2_ttf_dep')
 dep_list += sdl2_ttf_dep
 
