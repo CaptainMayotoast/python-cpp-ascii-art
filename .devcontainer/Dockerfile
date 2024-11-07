@@ -21,4 +21,7 @@ RUN chown $USER_UID:$USERNAME "/home/$USERNAME/.bashrc" \
 # change default user to non-root
 USER $USERNAME
 
+# enable pre-commit hooks
+RUN pre-commit install
+
 CMD ["/bin/bash source /home/$USERNAME/.bashrc"]
