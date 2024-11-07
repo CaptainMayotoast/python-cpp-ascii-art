@@ -64,5 +64,7 @@ debugsan
 coverage
 
 subprojects/*
-subprojects/packagecache/*
+subprojects/packagecache/*\
+subprojects/compile_commands.json
+subprojects/build.ninja
 !subprojects/*.wrap
