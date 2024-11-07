@@ -87,7 +87,7 @@ dep_list += py_dep
 cuda_dep = dependency(
     'cuda',
     version: '>=12',
-    modules: ['cudart', 'nvrtc', 'culibos', 'cublas', 'curand'],
+    modules: ['cudart_static', 'nvrtc_static', 'cublas_static', 'curand_static'],
     native: true,
     static: true,
 )
