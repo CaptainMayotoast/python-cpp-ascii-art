@@ -141,7 +141,7 @@ pixel_to_ascii(
 std::string
 image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
-    const auto char_patches = cudascii::ascii_chars_to_patchs(gray_levels_fine, 8, 14);
+    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine, 8, 14);
 
     std::cout << "Reading file" << std::endl;
 
