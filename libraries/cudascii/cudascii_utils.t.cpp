@@ -1,0 +1,25 @@
+#include <catch2/catch_test_macros.hpp>
+
+#include <cstdint>
+#include <iostream>
+
+#include <cudascii_utils.hpp>
+
+TEST_CASE("get_pixel_m", "[cudascii_utils]")
+{
+    const std::vector<std::uint8_t> actual_m{
+            0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   0,   0,   0,   0,   0,   0,   0,
+            0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   0,   0,   0,   0,   0,   0,   0,
+            1, 243, 203, 129, 241, 81,  163, 234, 63,  0,   0, 24, 244, 145, 101, 239, 116, 132, 163, 0,
+            0, 8,   255, 32,  44,  250, 5,   80,  184, 0,   0, 8,  254, 3,   44,  225, 0,   80,  184, 0,
+            0, 8,   252, 0,   44,  220, 0,   80,  184, 0,   0, 24, 252, 11,  44,  223, 8,   80,  190, 6,
+            1, 243, 255, 178, 34,  253, 150, 68,  255, 126, 0, 0,  0,   0,   0,   0,   0,   0,   0,   0,
+            0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   0,   0,   0,   0,   0,   0,   0,
+            0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   0,   0,   0,   0,   0,   0,   0};
+
+    const std::string m{'m'};
+
+    const auto calculated_m = cudascii::utils::ascii_char_to_patch(m, 14);
+
+    CHECK(actual_m == calculated_m);
+}

@@ -69,3 +69,10 @@ py_installation.extension_module(
     link_args: ['-static-libstdc++'],
     override_options: ['cpp_rtti=true', 'cython_version=3'],
 )
+
+test_cudascii_utils = executable(
+    'cudascii_utilities_tests',
+    [cudascii_source_utils, 'cudascii_utils.t.cpp'],
+    dependencies: [sdl2_dep, sdl2_ttf_dep, spdlog_dep, catch2_with_main_dep],
+)
+test('cudascii_utilities_tests', test_cudascii_utils)
