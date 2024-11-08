@@ -34,3 +34,7 @@ Then, run:
 2. `sudo nvidia-ctk runtime configure --runtime=docker`
 
 3. `sudo systemctl restart docker`
+
+### Tests
+
+Run `meson test -C <build type>`
