@@ -1,4 +1,4 @@
-cudascii_source = files('cudascii_dummy.cpp', 'cudascii_utils.cpp')
+cudascii_source_core = files('cudascii_core.cpp', 'cudascii_utils.cpp')
 
 cudascii_include = include_directories('.')
 
@@ -6,7 +6,7 @@ cuda = import('unstable-cuda')
 
 lib_static_cuda_cudascii = static_library(
     'cudascii_cuda',
-    files('cudascii_dummy.cu'),
+    files('cudascii_core.cu'),
     # https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html
     cuda_args: [cuda.nvcc_arch_flags('12.6', 'Common')]
     + [
@@ -51,7 +51,7 @@ lib_cudascii_dep_list = [
 # https://mesonbuild.com/Python-module.html#extension_module
 py_installation.extension_module(
     'cudascii',
-    sources: cudascii_source,
+    sources: cudascii_source_core,
     dependencies: lib_cudascii_dep_list,
     link_language: 'cpp',
     link_args: ['-static-libstdc++'],

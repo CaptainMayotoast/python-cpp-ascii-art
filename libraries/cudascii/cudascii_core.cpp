@@ -1,4 +1,4 @@
-#include <cudascii_dummy.hpp>
+#include <cudascii_core.hpp>
 #include <iostream>
 #include <cuda_runtime.h>
 #include <cimg_cimg.hpp>
