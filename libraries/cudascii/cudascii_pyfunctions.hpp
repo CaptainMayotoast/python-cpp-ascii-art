@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-namespace cudascii {
+namespace cudascii::pyfunctions {
 
 ////////////////////////////////////////////////////////////////////
 // CUDA functions
@@ -49,4 +49,4 @@ PYBIND11_MODULE(cudascii, m)
     m.def("test_cuda", &test_cuda, "A function to test cuda setting a vector");
 }
 
-}  // namespace cudascii
+}  // namespace cudascii::pyfunctions

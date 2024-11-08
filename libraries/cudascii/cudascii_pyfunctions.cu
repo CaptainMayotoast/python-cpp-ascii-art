@@ -10,6 +10,7 @@
 #include <cudascii_utils.hpp>
 
 namespace {
+    
 // Algorithm Parameterization
 const std::string gray_levels_fine =
 "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. ";
@@ -26,7 +27,7 @@ const constexpr float ABOVE_THRESHOLD_OFFSET = -0.055;
 
 }  // namespace
 
-namespace cudascii {
+namespace cudascii::pyfunctions {
 
 __global__ void
 set_pixels_to_255(unsigned char* out, int width, int height)
@@ -303,4 +304,5 @@ test_cuda()
 
     return true;
 }
+
 }  // namespace cudascii

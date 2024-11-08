@@ -90,6 +90,12 @@ cuda_dep = dependency(
     modules: ['cudart_static', 'nvrtc_static', 'cublas_static', 'curand_static'],
     native: true,
     static: true,
+    default_options: [
+        'default_library=static',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 
 cpp = meson.get_compiler('cpp')
