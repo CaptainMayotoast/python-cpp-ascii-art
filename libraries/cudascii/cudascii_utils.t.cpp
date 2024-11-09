@@ -5,8 +5,9 @@
 
 #include <cudascii_utils.hpp>
 
-TEST_CASE("get_pixel_m", "[cudascii_utils]")
+TEST_CASE("ascii_char_to_patch_m", "[cudascii_utils]")
 {
+    // 14 point font, 10px wide, 16 tall (14px + 1px padding + 1px padding)
     const std::vector<std::uint8_t> actual_m{
             0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   0,   0,   0,   0,   0,   0,   0,
             0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   0,   0,   0,   0,   0,   0,   0,
@@ -21,5 +22,6 @@ TEST_CASE("get_pixel_m", "[cudascii_utils]")
 
     const auto calculated_m = cudascii::utils::ascii_char_to_patch(m, 14);
 
-    CHECK(actual_m == calculated_m);
+    CHECK(calculated_m.size() == (16 * 10));
+    REQUIRE(actual_m == calculated_m);
 }
