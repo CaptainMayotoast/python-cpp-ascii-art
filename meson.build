@@ -1,5 +1,5 @@
 project(
-    'securitysystem',
+    'cudascii',
     'cpp',
     'c',
     'cuda',
