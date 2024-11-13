@@ -1,6 +1,8 @@
 #include <cudascii_utils.hpp>
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+
+#include <execution>
 
 namespace cudascii::utils {
 
@@ -50,8 +52,10 @@ ascii_char_to_patch(std::string_view character, int patch_height)
     SDL_Color foregroundColor = {255, 255, 255, 0};
     SDL_Color backgroundColor = {0, 0, 0, 0};
 
+    const char singleChar{character.front()};
+
     SDL_Surface* textSurface = SDL_ConvertSurfaceFormat(
-            TTF_RenderText_Shaded(font, character.data(), foregroundColor, backgroundColor),
+            TTF_RenderText_Shaded(font, &singleChar, foregroundColor, backgroundColor),
             SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888,
             0);
 
@@ -70,11 +74,16 @@ ascii_char_to_patch(std::string_view character, int patch_height)
 std::vector<std::vector<std::uint8_t>>
 ascii_chars_to_patchs(std::string_view chars, int patch_height)
 {
-    std::vector<std::vector<std::uint8_t>> pairs(chars.size());
-    std::ranges::transform(chars, std::back_inserter(pairs), [patch_height](char c) {
-        return ascii_char_to_patch(std::to_string(c), patch_height);
-    });
-    return pairs;
+    std::vector<std::vector<std::uint8_t>> chars_as_patches(chars.size());
+    std::transform(
+            std::execution::par_unseq,
+            chars.cbegin(),
+            chars.cend(),
+            chars_as_patches.begin(),
+            [patch_height](const auto c) {
+                return ascii_char_to_patch(std::string_view{&c, 1}, patch_height);
+            });
+    return chars_as_patches;
 }
 
 }  // namespace cudascii::utils
