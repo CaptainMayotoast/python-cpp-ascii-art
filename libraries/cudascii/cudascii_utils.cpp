@@ -3,15 +3,16 @@
 #include <spdlog/spdlog.h>
 
 #include <execution>
+#include <ranges>
 
 namespace cudascii::utils {
 
 std::optional<std::uint8_t>
-get_pixel(SDL_Surface* surface, int row, int col)
+get_pixel(const SDL_Surface* surface, int row, int col)
 {
     if (row >= 0 && col >= 0 && col < surface->w && row < surface->h) {
-        const auto pixels = reinterpret_cast<std::uint32_t*>(surface->pixels);
-        auto pixel = pixels[row * surface->w + col];
+        const auto pixels = static_cast<std::uint32_t*>(surface->pixels);
+        const auto pixel = pixels[row * surface->w + col];
 
         std::uint8_t r{0u};
         std::uint8_t g{0u};
@@ -32,7 +33,7 @@ get_pixel(SDL_Surface* surface, int row, int col)
 }
 
 std::vector<std::uint8_t>
-ascii_char_to_patch(std::string_view character, int patch_height)
+ascii_char_to_patch(std::string_view character, int patch_height, const std::filesystem::path& ttf_path)
 {
     std::vector<std::uint8_t> patch;
     patch.reserve(patch_height * patch_height);
@@ -42,20 +43,19 @@ ascii_char_to_patch(std::string_view character, int patch_height)
         spdlog::error("TTF could not initialize! TTF_Error: {}", TTF_GetError());
     }
 
-    TTF_Font* font =
-            TTF_OpenFont("/build/applications/sample/assets/CourierPrime-Regular.ttf", patch_height);
+    TTF_Font* font = TTF_OpenFont(ttf_path.c_str(), patch_height);
 
     if (font == nullptr) {
         spdlog::error("{}", SDL_GetError());
     }
 
-    SDL_Color foregroundColor = {255, 255, 255, 0};
-    SDL_Color backgroundColor = {0, 0, 0, 0};
+    const SDL_Color foregroundColor = {255, 255, 255, 0};
+    const SDL_Color backgroundColor = {0, 0, 0, 0};
 
     const char singleChar{character.front()};
 
     SDL_Surface* textSurface = SDL_ConvertSurfaceFormat(
-            TTF_RenderText_Shaded(font, &singleChar, foregroundColor, backgroundColor),
+            TTF_RenderText_Shaded(font, std::addressof(singleChar), foregroundColor, backgroundColor),
             SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888,
             0);
 
@@ -72,7 +72,7 @@ ascii_char_to_patch(std::string_view character, int patch_height)
 }
 
 std::vector<std::vector<std::uint8_t>>
-ascii_chars_to_patchs(std::string_view chars, int patch_height)
+ascii_chars_to_patchs(std::string_view chars, int patch_height, const std::filesystem::path& ttf_path)
 {
     std::vector<std::vector<std::uint8_t>> chars_as_patches(chars.size());
     std::transform(
@@ -80,8 +80,8 @@ ascii_chars_to_patchs(std::string_view chars, int patch_height)
             chars.cbegin(),
             chars.cend(),
             chars_as_patches.begin(),
-            [patch_height](const auto c) {
-                return ascii_char_to_patch(std::string_view{&c, 1}, patch_height);
+            [patch_height, &ttf_path](const auto c) {
+                return ascii_char_to_patch(std::string_view{&c, 1}, patch_height, ttf_path);
             });
     return chars_as_patches;
 }
