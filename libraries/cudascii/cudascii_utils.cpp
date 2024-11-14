@@ -10,17 +10,16 @@ namespace cudascii::utils {
 std::optional<std::uint8_t>
 get_pixel(const SDL_Surface* surface, int row, int col)
 {
-    if (row >= 0 && col >= 0 && col < surface->w && row < surface->h) {
+    if (row >= 0 && col >= 0 && col < surface->w && row < surface->h) [[likely]] {
         const auto pixels = static_cast<std::uint32_t*>(surface->pixels);
-        const auto pixel = pixels[row * surface->w + col];
 
         std::uint8_t r{0u};
-        std::uint8_t g{0u};
-        std::uint8_t b{0u};
-        std::uint8_t a{0u};
+        [[maybe_unused]] std::uint8_t g{0u};
+        [[maybe_unused]] std::uint8_t b{0u};
+        [[maybe_unused]] std::uint8_t a{0u};
 
         SDL_GetRGBA(
-                pixel,
+                pixels[row * surface->w + col],
                 surface->format,
                 std::addressof(r),
                 std::addressof(g),
@@ -36,13 +35,13 @@ std::vector<std::uint8_t>
 ascii_char_to_patch(std::string_view character, int patch_height, const std::filesystem::path& ttf_path)
 {
     // Initialize SDL_ttf
-    if (TTF_Init() == -1) {
+    if (TTF_Init() == -1) [[unlikely]] {
         spdlog::error("TTF could not initialize! TTF_Error: {}", TTF_GetError());
     }
 
     TTF_Font* font = TTF_OpenFont(ttf_path.c_str(), patch_height);
 
-    if (font == nullptr) {
+    if (font == nullptr) [[unlikely]] {
         spdlog::error("{}", SDL_GetError());
     }
 
