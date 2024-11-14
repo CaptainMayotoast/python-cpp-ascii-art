@@ -35,9 +35,6 @@ get_pixel(const SDL_Surface* surface, int row, int col)
 std::vector<std::uint8_t>
 ascii_char_to_patch(std::string_view character, int patch_height, const std::filesystem::path& ttf_path)
 {
-    std::vector<std::uint8_t> patch;
-    patch.reserve(patch_height * patch_height);
-
     // Initialize SDL_ttf
     if (TTF_Init() == -1) {
         spdlog::error("TTF could not initialize! TTF_Error: {}", TTF_GetError());
@@ -58,6 +55,9 @@ ascii_char_to_patch(std::string_view character, int patch_height, const std::fil
             TTF_RenderText_Shaded(font, std::addressof(singleChar), foregroundColor, backgroundColor),
             SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888,
             0);
+
+    std::vector<std::uint8_t> patch;
+    patch.reserve(textSurface->h * textSurface->w);
 
     for (int row = 0; row < textSurface->h; row++) {
         for (int col = 0; col < textSurface->w; col++) {

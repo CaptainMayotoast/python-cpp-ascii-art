@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/benchmark/catch_benchmark_all.hpp>
 
+#include <nanobench.h>
+
 #include <cstdint>
 #include <iostream>
 
@@ -31,10 +33,9 @@ TEST_CASE("ascii_char_to_patch_m", "[cudascii_utils]")
     CHECK(calculated_m.size() == (16 * 10));
     REQUIRE(actual_m == calculated_m);
 
-    BENCHMARK("ascii_char_to_patch 'm'")
-    {
-        return cudascii::utils::ascii_char_to_patch(m, 14);
-    };
+    ankerl::nanobench::Bench().run("ascii_char_to_patch", [&]() {
+        ankerl::nanobench::doNotOptimizeAway(cudascii::utils::ascii_char_to_patch(m, 14));
+    });
 }
 
 TEST_CASE("ascii_chars_to_patchs", "[cudascii_utils]")
@@ -46,4 +47,8 @@ TEST_CASE("ascii_chars_to_patchs", "[cudascii_utils]")
     CHECK(calculated_patches.size() == characters.size());
     CHECK(calculated_patches.at(characters.find('m')).size() == (16 * 10));
     REQUIRE(calculated_patches.at(characters.find('m')) == actual_m);
+
+    ankerl::nanobench::Bench().run("ascii_chars_to_patchs", [&]() {
+        ankerl::nanobench::doNotOptimizeAway(cudascii::utils::ascii_chars_to_patchs(characters, 14));
+    });
 }

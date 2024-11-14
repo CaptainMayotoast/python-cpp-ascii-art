@@ -70,9 +70,17 @@ py_installation.extension_module(
     override_options: ['cpp_rtti=true', 'cython_version=3'],
 )
 
+# use catch2 for the test framework
+# use nanobench for benchmarking
 test_cudascii_utils = executable(
     'cudascii_utilities_tests',
     [cudascii_source_utils, 'cudascii_utils.t.cpp'],
-    dependencies: [sdl2_dep, sdl2_ttf_dep, spdlog_dep, catch2_with_main_dep],
+    dependencies: [
+        sdl2_dep,
+        sdl2_ttf_dep,
+        spdlog_dep,
+        catch2_with_main_dep,
+        nanobench_dep,
+    ],
 )
 test('cudascii_utilities_tests', test_cudascii_utils)
