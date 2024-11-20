@@ -12,7 +12,7 @@ project(
         'b_pie=true',
         'b_staticpic=true',
         'b_lundef=true',
-        'cpp_std=c++2a',
+        'cpp_std=c++23',
         'prefer_static=true',
         'werror=true',
         'warning_level=3',

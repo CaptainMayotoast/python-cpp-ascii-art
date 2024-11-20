@@ -16,6 +16,8 @@ lib_cudascii_utils_static_dep = declare_dependency(
     include_directories: cudascii_include,
 )
 
+#######################################################################
+
 cuda = import('unstable-cuda')
 
 lib_static_cuda_cudascii = static_library(
@@ -45,6 +47,8 @@ lib_static_cuda_cudascii = static_library(
 
 lib_static_cuda_cudascii_dep = declare_dependency(link_with: lib_static_cuda_cudascii, include_directories: cudascii_include)
 
+#######################################################################
+
 lib_cudascii_dep_list = [
     cli11_core_dep,
     cuda_dep,
@@ -70,6 +74,8 @@ py_installation.extension_module(
     override_options: ['cpp_rtti=true', 'cython_version=3'],
 )
 
+#######################################################################
+
 # use catch2 for the test framework
 # use nanobench for benchmarking
 test_cudascii_utils = executable(
@@ -81,6 +87,7 @@ test_cudascii_utils = executable(
         spdlog_dep,
         catch2_with_main_dep,
         nanobench_dep,
+        lib_static_ranges_helpers_dep,
     ],
 )
 test('cudascii_utilities_tests', test_cudascii_utils)
