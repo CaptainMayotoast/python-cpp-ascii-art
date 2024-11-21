@@ -14,12 +14,6 @@
 2. Enter the devcontainer with VS Code.
 
 3. Build with: `./build.sh <debug|release>`.
- 
-## Updating submodules (for the Docker image repo)
-
-1. Run `git submodule update --init`
-
-2. Run `git submodule update --recursive --remote` in the top level development folder (i.e. `/build`)
 
 ### CUDA
 
@@ -34,3 +28,7 @@ Then, run:
 2. `sudo nvidia-ctk runtime configure --runtime=docker`
 
 3. `sudo systemctl restart docker`
+
+### Tests
+
+Run `meson test -C <build type>`

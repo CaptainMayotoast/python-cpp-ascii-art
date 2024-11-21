@@ -1,4 +1,4 @@
-# How to use the Python module
+# How to use the CUDASCII Python module
 
 1. Navigate to the build system artefact folder (i.e. `/build/debug/libraries/cudascii`)
 

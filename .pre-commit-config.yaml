@@ -15,3 +15,10 @@ repos:
           entry: ./scripts/format_cpp.sh
           language: script
           pass_filenames: false
+-   repo: local
+    hooks:
+        - id: build
+          name: build
+          entry: ./build.sh debug
+          language: script
+          pass_filenames: false

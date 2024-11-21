@@ -1,9 +1,9 @@
-#include <cudascii_dummy.hpp>
+#include <cudascii_pyfunctions.hpp>
 #include <iostream>
 #include <cuda_runtime.h>
 #include <cimg_cimg.hpp>
 
-namespace cudascii {
+namespace cudascii::pyfunctions {
 
 void
 pixel_to_ascii(
@@ -30,4 +30,4 @@ get_image_size(const std::string& filename)
     return {width, height, channels};
 }
 
-}  // namespace cudascii
+}  // namespace cudascii::pyfunctions

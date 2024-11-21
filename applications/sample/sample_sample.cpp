@@ -18,13 +18,9 @@ namespace sample {
 std::optional<std::uint32_t>
 Sample::getPixel(SDL_Surface* surface, int row, int col)
 {
-    // std::cout << "surface->w: " << surface->w << std::endl;
     if (row >= 0 && col >= 0 && col < surface->w && row < surface->h) {
-        // int bpp = surface->format->BytesPerPixel;
         const auto pixels = reinterpret_cast<std::uint32_t*>(surface->pixels);
-        auto pixel = pixels[row * surface->w + col];  // * bpp
-
-        // assert(bpp == 1);
+        auto pixel = pixels[row * surface->w + col];
 
         std::uint8_t r{0u};
         std::uint8_t g{0u};
@@ -32,7 +28,7 @@ Sample::getPixel(SDL_Surface* surface, int row, int col)
         std::uint8_t a{0u};
 
         SDL_GetRGBA(
-                static_cast<std::uint32_t>(pixel),
+                pixel,
                 surface->format,
                 std::addressof(r),
                 std::addressof(g),
@@ -60,7 +56,9 @@ Sample::Sample()
     SDL_Color foregroundColor = {255, 255, 255, 0};
     SDL_Color backgroundColor = {0, 0, 0, 0};
 
-    SDL_Surface* textSurface = TTF_RenderText_Shaded(font, "m", foregroundColor, backgroundColor);
+    const auto m = "m";
+
+    SDL_Surface* textSurface = TTF_RenderText_Shaded(font, m, foregroundColor, backgroundColor);
 
     assert(textSurface != nullptr);
 
@@ -71,6 +69,8 @@ Sample::Sample()
     SDL_Surface* freshSurface =
             SDL_ConvertSurfaceFormat(textSurface, SDL_PixelFormatEnum::SDL_PIXELFORMAT_RGBA8888, 0);
 
+    std::cout << std::format("w: {}, h: {}", freshSurface->w, freshSurface->h) << std::endl;
+
     for (int row = 0; row < freshSurface->h; row++) {
         for (int col = 0; col < freshSurface->w; col++) {
             const auto value = std::to_string(getPixel(freshSurface, row, col).value_or(0));
@@ -80,6 +80,7 @@ Sample::Sample()
                 std::cout << "1";
             else
                 std::cout << "0";
+            // std::cout << std::format("{},", value);
         }
         std::cout << std::endl;
     }

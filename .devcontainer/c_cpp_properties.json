@@ -5,16 +5,18 @@
       "intelliSenseMode": "gcc-x64",
       "includePath": [
         "${workspaceFolder}",
-        "/usr/include/**"
+        "/usr/include/**",
+        "${workspaceFolder}/subprojects/**"
       ],
       "compilerPath": "/usr/local/bin/gcc",
       "cStandard": "c17",
       "cppStandard": "c++20",
-      "compileCommands": "/build/release/compile_commands.json",
+      "compileCommands": "/build/debug/compile_commands.json",
       "browse": {
         "path": [
           "${workspaceFolder}/**",
-          "/usr/include/**"
+          "/usr/include/**",
+          "${workspaceFolder}/subprojects/**"
         ],
         "limitSymbolsToIncludedHeaders": false
       }

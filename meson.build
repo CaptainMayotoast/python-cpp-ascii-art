@@ -1,5 +1,5 @@
 project(
-    'securitysystem',
+    'cudascii',
     'cpp',
     'c',
     'cuda',
@@ -12,7 +12,7 @@ project(
         'b_pie=true',
         'b_staticpic=true',
         'b_lundef=true',
-        'cpp_std=c++2a',
+        'cpp_std=c++23',
         'prefer_static=true',
         'werror=true',
         'warning_level=3',
@@ -90,6 +90,12 @@ cuda_dep = dependency(
     modules: ['cudart_static', 'nvrtc_static', 'cublas_static', 'curand_static'],
     native: true,
     static: true,
+    default_options: [
+        'default_library=static',
+        'b_staticpic=true',
+        'warning_level=0',
+        'werror=false',
+    ],
 )
 
 cpp = meson.get_compiler('cpp')
@@ -297,6 +303,25 @@ sdl2_ttf_proj = subproject(
 )
 sdl2_ttf_dep = sdl2_ttf_proj.get_variable('sdl2_ttf_dep')
 dep_list += sdl2_ttf_dep
+
+# microbench
+
+cmake = import('cmake')
+cmake_opts = cmake.subproject_options()
+
+if meson.current_build_dir().contains('debug')
+  cmake_opts.add_cmake_defines({
+                                'CMAKE_POSITION_INDEPENDENT_CODE': true,
+                                'CMAKE_BUILD_TYPE': 'Debug'})
+else
+  cmake_opts.add_cmake_defines({
+                                'CMAKE_POSITION_INDEPENDENT_CODE': true,
+                                'CMAKE_BUILD_TYPE': 'Release'})
+endif
+
+cmake_opts.append_compile_args('cpp', '-w') # silence warnings
+nanobench_proj = cmake.subproject('nanobench', options: cmake_opts)
+nanobench_dep = nanobench_proj.dependency('nanobench')
 
 ###############################################################################################
 # now, binary build targets and libraries

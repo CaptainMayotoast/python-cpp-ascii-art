@@ -10,6 +10,7 @@
 #include <cudascii_utils.hpp>
 
 namespace {
+
 // Algorithm Parameterization
 const std::string gray_levels_fine =
 "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. ";
@@ -26,7 +27,7 @@ const constexpr float ABOVE_THRESHOLD_OFFSET = -0.055;
 
 }  // namespace
 
-namespace cudascii {
+namespace cudascii::pyfunctions {
 
 __global__ void
 set_pixels_to_255(unsigned char* out, int width, int height)
@@ -141,7 +142,7 @@ pixel_to_ascii(
 std::string
 image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
-    const auto char_patches = cudascii::ascii_chars_to_patchs(gray_levels_fine, 8, 14);
+    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine, 14);
 
     std::cout << "Reading file" << std::endl;
 
@@ -303,4 +304,5 @@ test_cuda()
 
     return true;
 }
+
 }  // namespace cudascii
