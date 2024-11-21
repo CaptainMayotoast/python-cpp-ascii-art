@@ -169,3 +169,23 @@ TEST_CASE("ascii_chars_to_patchs_sizes_font_14", "[cudascii_utils]")
     // 160
     REQUIRE(*max == MaxSizePixels_font14);
 }
+
+TEST_CASE("image_edge_map", "[cudascii_utils]")
+{
+    cimg_library::CImg<unsigned char> src("/build/libraries/cudascii/assets/gradient.png");
+    REQUIRE(!src.is_empty());
+
+    cimg_library::CImg<unsigned char> edges = cudascii::utils::edge_map(src);
+    CHECK(edges.size() == src.size());
+}
+
+TEST_CASE("crop_image", "[cudascii_utils]")
+{
+    cimg_library::CImg<unsigned char> src("/build/libraries/cudascii/assets/gradient.png");
+    REQUIRE(!src.is_empty());
+
+    cimg_library::CImg<unsigned char> cropped = cudascii::utils::crop_to_grid(src, 3, 4);
+    CHECK(cropped.width() % 3 == 0);
+    CHECK(cropped.height() % 4 == 0);
+    CHECK(cropped.size() <= src.size());
+}
