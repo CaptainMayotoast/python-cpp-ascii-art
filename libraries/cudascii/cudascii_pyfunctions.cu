@@ -151,26 +151,15 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 
     std::cout << "File read successfully" << std::endl;
 
-    // Get the image dimensions
+    // Clip image to the patch size
+    src = cudascii::utils::crop_to_grid(src, patch_width, patch_height);
+
+    // Get the cropped image dimensions
     int width{src.width()};
     int height{src.height()};
 
-    // clip image to the patch size
-    width = (width / patch_width) * patch_width;
-    height = (height / patch_height) * patch_height;
-
-    src = src.resize(width, height);
-
-    // this is edge detection
-    // https://en.wikipedia.org/wiki/Image_gradient
-    // https://cimg.eu/reference/structcimg__library_1_1CImg.html#a6c7b2bc4442e062706fa1bbc04621d8f
-    auto gradientList = src.get_gradient("xy", 0);
-
-    // get_gradient returns two elements here, gradient in the north-south direction and in the east-west
-    // direction abs is taken because we do not care about negative values, sign (+/-) indicates a side,
-    // but we do not care about which side the gradient value is on) gray is no gradient, black would be
-    // negative, white is positive
-    src = cimg_library::CImg<unsigned char>(gradientList.at(0).abs() + gradientList.at(1).abs());
+    // Perform edge detection
+    src = cudascii::utils::edge_map(src);
 
     std::cout << std::format("Max: {}, min: {}", src.max(), src.min()) << std::endl;
 

@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
-
+#include <cimg_cimg.hpp>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -26,5 +26,11 @@ ascii_chars_to_patchs(
         int patch_height = 14,
         const std::filesystem::path& ttf_path = {
                 "/build/applications/sample/assets/CourierPrime-Regular.ttf"});
+
+[[nodiscard]] cimg_library::CImg<unsigned char>
+crop_to_grid(cimg_library::CImg<unsigned char> src, int cell_width, int cell_height);
+
+[[nodiscard]] cimg_library::CImg<unsigned char>
+edge_map(cimg_library::CImg<unsigned char> src);
 
 }  // namespace cudascii::utils

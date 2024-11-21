@@ -84,6 +84,7 @@ test_cudascii_utils = executable(
     dependencies: [
         sdl2_dep,
         sdl2_ttf_dep,
+        lib_static_cimg_dep,
         spdlog_dep,
         catch2_with_main_dep,
         nanobench_dep,

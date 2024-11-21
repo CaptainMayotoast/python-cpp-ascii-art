@@ -85,4 +85,32 @@ ascii_chars_to_patchs(std::string_view chars, int patch_height, const std::files
     return chars_as_patches;
 }
 
+cimg_library::CImg<unsigned char>
+crop_to_grid(cimg_library::CImg<unsigned char> src, int cell_width, int cell_height)
+{
+    int width{src.width()};
+    int height{src.height()};
+
+    // clip image to the cell size
+    int crop_width = (width / cell_width) * cell_width;
+    int crop_height = (height / cell_height) * cell_height;
+
+    return src.resize(crop_width, crop_height);
+}
+
+cimg_library::CImg<unsigned char>
+edge_map(cimg_library::CImg<unsigned char> src)
+{
+    // this is edge detection
+    // https://en.wikipedia.org/wiki/Image_gradient
+    // https://cimg.eu/reference/structcimg__library_1_1CImg.html#a6c7b2bc4442e062706fa1bbc04621d8f
+    auto gradientList = src.get_gradient("xy", 0);
+
+    // get_gradient returns two elements here, gradient in the north-south direction and in the east-west
+    // direction abs is taken because we do not care about negative values, sign (+/-) indicates a side,
+    // but we do not care about which side the gradient value is on) gray is no gradient, black would be
+    // negative, white is positive
+    return cimg_library::CImg<unsigned char>(gradientList.at(0).abs() + gradientList.at(1).abs());
+}
+
 }  // namespace cudascii::utils
