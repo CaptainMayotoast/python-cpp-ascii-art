@@ -10,6 +10,36 @@
 
 namespace cudascii::utils {
 
+/// @brief represents Space
+const constexpr uint8_t ASCIIStartIdx{32U};
+
+/// @brief represents ~
+const constexpr uint8_t ASCIIEndIdx{126U};
+
+/// @brief the number of indices to cover (inclusive of last index)
+const constexpr uint8_t ReadableASCIISize{ASCIIEndIdx - ASCIIStartIdx + 1};
+
+/// @brief generate a consteval array of char for readable ASCII characters
+/// @note https://en.cppreference.com/w/cpp/language/ascii
+/// @return the readable ASCII characters as a std::array
+[[nodiscard]] consteval std::array<char, ReadableASCIISize>
+generateASCIIChars() noexcept
+{
+    std::array<char, ReadableASCIISize> asciiChars;
+
+    for (uint8_t i{0U}; i < ReadableASCIISize; ++i) {
+        asciiChars[i] = static_cast<char>(i + ASCIIStartIdx);
+    }
+
+    return asciiChars;
+}
+
+/// @brief gets the pixel from an SDL_Surface by row and col
+/// @param surface the SDL_Surface to extract a pixel from
+/// @param row the row (y value)
+/// @param col the column (x value)
+/// @return the pixel's single channel (red), or an empty optional if the pixel retrieval was out of
+/// bounds
 [[nodiscard]] std::optional<std::uint8_t>
 get_pixel(const SDL_Surface* surface, int row, int col);
 

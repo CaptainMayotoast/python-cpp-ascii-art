@@ -10,7 +10,7 @@
       ],
       "compilerPath": "/usr/local/bin/gcc",
       "cStandard": "c17",
-      "cppStandard": "c++20",
+      "cppStandard": "c++23",
       "compileCommands": "/build/debug/compile_commands.json",
       "browse": {
         "path": [
