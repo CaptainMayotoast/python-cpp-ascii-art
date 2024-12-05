@@ -13,8 +13,6 @@ pixel_to_ascii(
         unsigned char* b,
         int width,
         int height);
-bool
-test_cuda();
 
 std::tuple<int, int, int>
 get_image_size(const std::string& filename)

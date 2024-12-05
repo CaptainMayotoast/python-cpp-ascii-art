@@ -20,9 +20,6 @@ pixel_to_ascii(
 ////////////////////////////////////////////////////////////////////
 // Python functions within the module
 
-bool
-test_cuda();
-
 /**
  * @brief Convert an image to ASCII
  *
@@ -46,7 +43,6 @@ PYBIND11_MODULE(cudascii, m)
           &get_image_size,
           "A function that reads an image and returns its dimensions");
     m.def("image_to_ascii", &image_to_ascii, "A function to convert an image to ascii text");
-    m.def("test_cuda", &test_cuda, "A function to test cuda setting a vector");
 }
 
 }  // namespace cudascii::pyfunctions

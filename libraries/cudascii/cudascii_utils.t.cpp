@@ -56,35 +56,11 @@ const std::vector<std::uint8_t> Actual_Tilda{
         0, 0, 0, 0,  0, 0,  0,   0,   0,  0, 0,   0,  0, 0,   0,  0,  0,   0,   0,   0,  0, 0,
         0, 0, 0, 0,  0, 0,  0,   0,   0,  0, 0,   0,  0, 0,   0,  0,  0,   0};
 
-/// @brief represents Space
-const constexpr uint8_t ASCIIStartIdx{32U};
-
-/// @brief represents ~
-const constexpr uint8_t ASCIIEndIdx{126U};
-
-/// @brief the number of indices to cover (inclusive of last index)
-const constexpr uint8_t ReadableASCIISize{ASCIIEndIdx - ASCIIStartIdx + 1};
-
-/// @brief generate a consteval array of char for readable ASCII characters
-/// @note https://en.cppreference.com/w/cpp/language/ascii
-/// @return the readable ASCII characters as a std::array
-[[nodiscard]] consteval std::array<char, ReadableASCIISize>
-generateASCIIChars() noexcept
-{
-    std::array<char, ReadableASCIISize> asciiChars;
-
-    for (uint8_t i{0U}; i < ReadableASCIISize; ++i) {
-        asciiChars[i] = static_cast<char>(i + ASCIIStartIdx);
-    }
-
-    return asciiChars;
-}
-
 }  // namespace
 
 TEST_CASE("ascii_character_generation", "[cudascii_utils]")
 {
-    const constexpr auto ascii_characters{generateASCIIChars()};
+    const constexpr auto ascii_characters{cudascii::utils::generateASCIIChars()};
 
     // confirm that the beginning and end are ' ' and '~' respectively
     CHECK(' ' == ascii_characters.front());
@@ -128,7 +104,7 @@ TEST_CASE("ascii_chars_to_patchs_font_14", "[cudascii_utils]")
 
 TEST_CASE("ascii_chars_to_patchs_front_back_font_14", "[cudascii_utils]")
 {
-    const constexpr auto ascii_characters = generateASCIIChars();
+    const constexpr auto ascii_characters = cudascii::utils::generateASCIIChars();
     auto sv_ascii_characters = std::string_view{ascii_characters};
 
     const auto calculated_patches =
@@ -152,7 +128,7 @@ TEST_CASE("ascii_chars_to_patchs_front_back_font_14", "[cudascii_utils]")
 
 TEST_CASE("ascii_chars_to_patchs_sizes_font_14", "[cudascii_utils]")
 {
-    const constexpr auto ascii_characters = generateASCIIChars();
+    const constexpr auto ascii_characters = cudascii::utils::generateASCIIChars();
     auto sv_ascii_characters = std::string_view{ascii_characters};
 
     const auto calculated_patches =

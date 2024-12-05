@@ -12,10 +12,10 @@
 namespace {
 
 // Algorithm Parameterization
-const std::string gray_levels_fine =
-"$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. ";
-const constexpr char* gray_level_lookup{"@%#*+=-:. "};
-const constexpr int gray_levels = 10;
+__device__ const constexpr auto gray_levels_fine = cudascii::utils::generateASCIIChars();
+__device__ const constexpr int gray_levels_fine_count = gray_levels_fine.size();
+auto gray_levels_fine_sv = std::string_view{gray_levels_fine.data()};
+
 const constexpr float RED_WEIGHT = 0.2126;
 const constexpr float GREEN_WEIGHT = 0.7152;
 const constexpr float BLUE_WEIGHT = 0.0722;
@@ -28,23 +28,6 @@ const constexpr float ABOVE_THRESHOLD_OFFSET = -0.055;
 }  // namespace
 
 namespace cudascii::pyfunctions {
-
-__global__ void
-set_pixels_to_255(unsigned char* out, int width, int height)
-{
-    // Calculate the global pixel index
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-
-    // Check if within bounds
-    if (x < width && y < height) {
-        // Calculate 1D index for the pixel
-        int index = y * width + x;
-
-        // Set pixel value to 255 (white)
-        out[index] = 66;
-    }
-}
 
 __global__ void
 patch_to_ascii(
@@ -69,7 +52,7 @@ patch_to_ascii(
     unsigned char matched_char{' '};
     unsigned int min_distance{std::numeric_limits<int>::max()};
 
-    for (int reference_char_index = 0; reference_char_index < gray_levels; reference_char_index++) {
+    for (int reference_char_index = 0; reference_char_index < gray_levels_fine_count; reference_char_index++) {
         unsigned int distance{0};
 
         for (int row = 0; row < patch_height; row++) {
@@ -91,7 +74,7 @@ patch_to_ascii(
         }
 
         if (distance < min_distance) {
-            matched_char = gray_level_lookup[reference_char_index];
+            matched_char = gray_levels_fine[reference_char_index];
             min_distance = distance;
         }
     }
@@ -133,16 +116,16 @@ pixel_to_ascii(
                  + ABOVE_THRESHOLD_OFFSET;
 
     // Scale c_srgb to the gray levels while handling an edge case of c_srgb = 1
-    gray_index = static_cast<int>(fmin((1 - c_srgb) * gray_levels, gray_levels - 1));
+    gray_index = static_cast<int>(std::fmin((1 - c_srgb) * gray_levels_fine_count, gray_levels_fine_count - 1));
 
     // Final character representing the gray level of the RGB pixel
-    out[i] = gray_level_lookup[gray_index];
+    out[i] = gray_levels_fine[gray_index];
 }
 
 std::string
 image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
-    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine, 14);
+    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
 
     std::cout << "Reading file" << std::endl;
 
@@ -250,48 +233,6 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     }
 
     return text;
-}
-
-bool
-test_cuda()
-{
-    // Assess how much memory is needed for image
-    unsigned int width, height;
-    width = 2560;
-    height = 5120;
-
-    const unsigned int N = width * height;
-    const unsigned int bytes = N * sizeof(unsigned char);
-
-    // Allocate GPU memory
-    unsigned char* d_a;
-    if (cudaMalloc((unsigned char**)&d_a, bytes) != cudaSuccess) {
-        std::cout << "failed!" << std::endl;
-        return false;
-    } else {
-        std::cout << "passed!" << std::endl;
-    }
-
-    dim3 blockSize(16, 16);  // 16x16 threads per block
-    dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
-
-    set_pixels_to_255<<<gridSize, blockSize>>>(d_a, width, height);
-
-    const auto error = cudaGetLastError();
-
-    if (error != cudaSuccess) {
-        std::cout << "failure!!!!!!" << std::endl;
-        std::cout << "result: " << error << std::endl;
-        return "";
-    }
-
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(3s);
-
-    // Don't forget to free memory!!!!
-    cudaFree(d_a);
-
-    return true;
 }
 
 }  // namespace cudascii
