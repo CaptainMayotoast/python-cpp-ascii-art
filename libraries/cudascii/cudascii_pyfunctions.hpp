@@ -9,13 +9,17 @@ namespace cudascii::pyfunctions {
 
 // Cuda kernel function mapping an RGB pixel to a gray level char
 void
-pixel_to_ascii(
+pixel_to_ascii_kernel(
         unsigned char* out,
         unsigned char* r,
         unsigned char* g,
         unsigned char* b,
         int width,
         int height);
+
+// function for mapping an RGB pixel to a gray level char
+void
+pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned char* b, int i);
 
 ////////////////////////////////////////////////////////////////////
 // Python functions within the module
