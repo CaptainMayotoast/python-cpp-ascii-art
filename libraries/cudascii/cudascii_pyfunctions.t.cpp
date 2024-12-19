@@ -12,12 +12,15 @@
 #include <cudascii_pyfunctions.hpp>
 #include <ranges_helpers.hpp>
 
+// TODO: Rework image_to_ascii so it doesn't apply the crop / edge map
+// that way a reference string can be acquired to put into this test case
+
 // TEST_CASE("pixel_to_ascii", "[cudascii_pyfunctions]")
 // {
 //     cimg_library::CImg<unsigned char> src("assets/gradient.png");
 //     REQUIRE(!src.is_empty());
 
-//     unsigned char *ref = ""
+//     unsigned char *ref = "o"
 
 //     int width{src.width()};
 //     int height{src.height()};
