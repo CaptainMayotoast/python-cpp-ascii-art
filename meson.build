@@ -16,6 +16,7 @@ project(
         'prefer_static=true',
         'werror=true',
         'warning_level=3',
+        'cuda_std=c++20'
     ],
 )
 

@@ -160,7 +160,7 @@ TEST_CASE("crop_image", "[cudascii_utils]")
     cimg_library::CImg<unsigned char> src("/build/libraries/cudascii/assets/gradient.png");
     REQUIRE(!src.is_empty());
 
-    cimg_library::CImg<unsigned char> cropped = cudascii::utils::crop_to_grid(src, 3, 4);
+    const auto cropped = cudascii::utils::crop_to_grid(src, 3, 4);
     CHECK(cropped.width() % 3 == 0);
     CHECK(cropped.height() % 4 == 0);
     CHECK(cropped.size() <= src.size());

@@ -3,11 +3,14 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <thread>
 #include <cimg_cimg.hpp>
 
 #include <cudascii_utils.hpp>
+
+#include <spdlog/spdlog.h>
 
 namespace {
 
@@ -135,26 +138,49 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
     const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
 
-    std::cout << "Reading file" << std::endl;
+    spdlog::info("Reading file: {}", filename);
+
+    std::optional<cimg_library::CImg<unsigned char>> src;
 
     // Load Image using CImg
-    cimg_library::CImg<unsigned char> src(filename.c_str());
-
-    std::cout << "File read successfully" << std::endl;
+    try{
+        src = std::make_optional<cimg_library::CImg<unsigned char>>(filename.c_str());
+        spdlog::info("File read successfully");
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("Unable to create a CImg object from {} with error {}", filename, e.what());
+        return "";
+    }
+    catch(...)
+    {
+        spdlog::error("Unable to create a CImg object from {} with unknown error", filename);
+        return "";
+    }
 
     // Clip image to the patch size
-    src = cudascii::utils::crop_to_grid(src, patch_width, patch_height);
+    src = cudascii::utils::crop_to_grid(*src, patch_width, patch_height);
 
-    // Get the cropped image dimensions
-    int width{src.width()};
-    int height{src.height()};
+    if(src->is_empty())
+    {
+        spdlog::error("Crop to grid result is empty");
+        return "";
+    }
 
     // Perform edge detection
-    src = cudascii::utils::edge_map(src);
+    src = cudascii::utils::edge_map(*src);
 
-    std::cout << std::format("Is Empty: {}", src.is_empty());
+    if(src->is_empty())
+    {
+        spdlog::error("Edge map result is empty");
+        return "";
+    }
 
-    std::cout << std::format("Max: {}, min: {}", src.max(), src.min()) << std::endl;
+    spdlog::info("Max: {}, min: {}", src->max(), src->min());
+
+    // Get the cropped image dimensions
+    const int width{src->width()};
+    const int height{src->height()};
 
     // Assess how much memory is needed for image
     const unsigned int N = width * height;
@@ -171,7 +197,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     cs_g = cudaMalloc((unsigned char**)&d_g, bytes);
     cs_b = cudaMalloc((unsigned char**)&d_b, bytes);
 
-    std::cout << "Allocated GPU memory" << std::endl;
+    spdlog::info("Allocated GPU memory");
 
     if ((cs_out | cs_r | cs_g | cs_b) != cudaSuccess) {
         std::cout << "failed!" << std::endl;
@@ -180,9 +206,9 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     }
 
     // Copy the image from host (CPU) to device (GPU)
-    cudaMemcpy(d_r, src.channel(0), bytes, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_g, src.channel(1), bytes, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b, src.channel(2), bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_r, src->channel(0), bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_g, src->channel(1), bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_b, src->channel(2), bytes, cudaMemcpyHostToDevice);
 
     auto error = cudaGetLastError();
 
