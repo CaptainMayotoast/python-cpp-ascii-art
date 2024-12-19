@@ -82,25 +82,13 @@ patch_to_ascii(
     out[patch_index] = matched_char;
 }
 
-__global__ void
-pixel_to_ascii(
+__host__ __device__ void pixel_to_ascii(
         unsigned char* out,
         unsigned char* r,
         unsigned char* g,
         unsigned char* b,
-        int width,
-        int height)
+        int i)
 {
-    // Calculate the global pixel index
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (!(x < width && y < height)) return;
-
-    int i = y * width + x;
-    // Thread index
-    // int i = threadIdx.x + blockIdx.x * blockDim.x;
-
     float c_linear, c_srgb;
     int gray_index{0};
 
@@ -120,6 +108,26 @@ pixel_to_ascii(
 
     // Final character representing the gray level of the RGB pixel
     out[i] = gray_levels_fine[gray_index];
+}
+
+__global__ void
+pixel_to_ascii_kernel(
+        unsigned char* out,
+        unsigned char* r,
+        unsigned char* g,
+        unsigned char* b,
+        int width,
+        int height)
+{
+    // Calculate the global pixel index
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (!(x < width && y < height)) return;
+
+    int i = y * width + x;
+
+    pixel_to_ascii(out, r, g, b, i);
 }
 
 std::string
@@ -143,6 +151,8 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 
     // Perform edge detection
     src = cudascii::utils::edge_map(src);
+
+    std::cout << std::format("Is Empty: {}", src.is_empty());
 
     std::cout << std::format("Max: {}, min: {}", src.max(), src.min()) << std::endl;
 
@@ -193,7 +203,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     dim3 blockSize(16, 16);  // 16x16 threads per block
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
-    pixel_to_ascii<<<gridSize, blockSize>>>(d_out, d_r, d_g, d_b, width, height);
+    pixel_to_ascii_kernel<<<gridSize, blockSize>>>(d_out, d_r, d_g, d_b, width, height);
 
     std::cout << "Changed pixel intensity to Ascii" << std::endl;
 
