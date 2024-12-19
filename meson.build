@@ -304,7 +304,7 @@ sdl2_ttf_proj = subproject(
 sdl2_ttf_dep = sdl2_ttf_proj.get_variable('sdl2_ttf_dep')
 dep_list += sdl2_ttf_dep
 
-# microbench
+# nanobench
 
 cmake = import('cmake')
 cmake_opts = cmake.subproject_options()
