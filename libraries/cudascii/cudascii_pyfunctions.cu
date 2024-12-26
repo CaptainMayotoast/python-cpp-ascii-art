@@ -55,7 +55,9 @@ patch_to_ascii(
     unsigned char matched_char{' '};
     unsigned int min_distance{std::numeric_limits<int>::max()};
 
-    for (int reference_char_index = 0; reference_char_index < gray_levels_fine_count; reference_char_index++) {
+    for (int reference_char_index = 0; reference_char_index < gray_levels_fine_count;
+         reference_char_index++)
+    {
         unsigned int distance{0};
 
         for (int row = 0; row < patch_height; row++) {
@@ -85,12 +87,8 @@ patch_to_ascii(
     out[patch_index] = matched_char;
 }
 
-__host__ __device__ void pixel_to_ascii(
-        unsigned char* out,
-        unsigned char* r,
-        unsigned char* g,
-        unsigned char* b,
-        int i)
+__host__ __device__ void
+pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned char* b, int i)
 {
     float c_linear, c_srgb;
     int gray_index{0};
@@ -107,7 +105,8 @@ __host__ __device__ void pixel_to_ascii(
                  + ABOVE_THRESHOLD_OFFSET;
 
     // Scale c_srgb to the gray levels while handling an edge case of c_srgb = 1
-    gray_index = static_cast<int>(std::fmin((1 - c_srgb) * gray_levels_fine_count, gray_levels_fine_count - 1));
+    gray_index = static_cast<int>(
+            std::fmin((1 - c_srgb) * gray_levels_fine_count, gray_levels_fine_count - 1));
 
     // Final character representing the gray level of the RGB pixel
     out[i] = gray_levels_fine[gray_index];
@@ -143,17 +142,13 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     std::optional<cimg_library::CImg<unsigned char>> src;
 
     // Load Image using CImg
-    try{
+    try {
         src = std::make_optional<cimg_library::CImg<unsigned char>>(filename.c_str());
         spdlog::info("File read successfully");
-    }
-    catch(const std::exception& e)
-    {
+    } catch (const std::exception& e) {
         spdlog::error("Unable to create a CImg object from {} with error {}", filename, e.what());
         return "";
-    }
-    catch(...)
-    {
+    } catch (...) {
         spdlog::error("Unable to create a CImg object from {} with unknown error", filename);
         return "";
     }
@@ -161,8 +156,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     // Clip image to the patch size
     src = cudascii::utils::crop_to_grid(*src, patch_width, patch_height);
 
-    if(src->is_empty())
-    {
+    if (src->is_empty()) {
         spdlog::error("Crop to grid result is empty");
         return "";
     }
@@ -170,8 +164,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     // Perform edge detection
     src = cudascii::utils::edge_map(*src);
 
-    if(src->is_empty())
-    {
+    if (src->is_empty()) {
         spdlog::error("Edge map result is empty");
         return "";
     }
@@ -190,18 +183,21 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     std::vector<unsigned char> h_out(N, 65);  // 65 in ASCII is "A"
 
     // Allocate GPU memory
-    unsigned char *d_out, *d_r, *d_g, *d_b;
-    int cs_out, cs_r, cs_g, cs_b;
-    cs_out = cudaMalloc((unsigned char**)&d_out, bytes);
-    cs_r = cudaMalloc((unsigned char**)&d_r, bytes);
-    cs_g = cudaMalloc((unsigned char**)&d_g, bytes);
-    cs_b = cudaMalloc((unsigned char**)&d_b, bytes);
+    unsigned char* d_out{nullptr};
+    unsigned char* d_r{nullptr};
+    unsigned char* d_g{nullptr};
+    unsigned char* d_b{nullptr};
+
+    int cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
+    int cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)};
+    int cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
+    int cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
 
     spdlog::info("Allocated GPU memory");
 
     if ((cs_out | cs_r | cs_g | cs_b) != cudaSuccess) {
-        std::cout << "failed!" << std::endl;
-        std::cout << cs_out << ',' << cs_r << ',' << cs_g << ',' << cs_b << std::endl;
+        spdlog::error("failed!");
+        spdlog::error("cs_out {}, cs_r {}, cs_g {}, cs_b {}", cs_out, cs_r, cs_g, cs_b);
         return "";
     }
 
@@ -212,18 +208,12 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 
     auto error = cudaGetLastError();
 
-    std::cout << "Copied CPU to GPU memory" << std::endl;
+    spdlog::info("Copied CPU to GPU memory");
 
     if (error != cudaSuccess) {
-        std::cout << "cudaMemcpy" << std::endl;
-        std::cout << "failure!!!!!!" << std::endl;
-        std::cout << "result: " << error << std::endl;
+        spdlog::error("cudaMemcpy failure with result {}", std::to_string(error));
         return "";
     }
-
-    // Call the pixel_to_ascii code here
-    // int threadsPerBlock = 256;
-    // int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
 
     // Launch kernel
     dim3 blockSize(16, 16);  // 16x16 threads per block
@@ -231,14 +221,12 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 
     pixel_to_ascii_kernel<<<gridSize, blockSize>>>(d_out, d_r, d_g, d_b, width, height);
 
-    std::cout << "Changed pixel intensity to Ascii" << std::endl;
+    spdlog::info("Changed pixel intensity to Ascii");
 
     error = cudaGetLastError();
 
     if (error != cudaSuccess) {
-        std::cout << "image_to_ascii" << std::endl;
-        std::cout << "failure!!!!!!" << std::endl;
-        std::cout << "result: " << error << std::endl;
+        spdlog::error("cudaMemcpy failure with result {}", std::to_string(error));
         return "";
     }
 
@@ -246,13 +234,10 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     const auto result = cudaMemcpy(h_out.data(), d_out, bytes, cudaMemcpyDeviceToHost);
 
     if (result != cudaSuccess) {
-        std::cout << "cudaMemcpy" << std::endl;
-        std::cout << "failure!!!!!!" << std::endl;
-        std::cout << "result: " << result << std::endl;
+        spdlog::error("cudaMemcpy failure with result {}", std::to_string(error));
         return "";
     }
 
-    // Don't forget to free memory!!!!
     cudaFree(d_out);
     cudaFree(d_r);
     cudaFree(d_g);
@@ -271,4 +256,4 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     return text;
 }
 
-}  // namespace cudascii
+}  // namespace cudascii::pyfunctions

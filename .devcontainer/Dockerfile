@@ -1,4 +1,4 @@
-FROM meson-build:13.3
+FROM meson-build:14.2
 
 # run as non-root
 ARG USERNAME
