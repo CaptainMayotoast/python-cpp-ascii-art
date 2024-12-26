@@ -6,9 +6,10 @@
 #include <optional>
 #include <string>
 #include <thread>
-#include <cimg_cimg.hpp>
 
+#include <cimg_cimg.hpp>
 #include <cudascii_utils.hpp>
+#include <ScopeGuard.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -193,6 +194,16 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     int cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
     int cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
 
+    finally
+    {
+        spdlog::info("Freeing CUDA memory");
+
+        cudaFree(d_out);
+        cudaFree(d_r);
+        cudaFree(d_g);
+        cudaFree(d_b);
+    };
+
     spdlog::info("Allocated GPU memory");
 
     if ((cs_out | cs_r | cs_g | cs_b) != cudaSuccess) {
@@ -238,19 +249,17 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         return "";
     }
 
-    cudaFree(d_out);
-    cudaFree(d_r);
-    cudaFree(d_g);
-    cudaFree(d_b);
-
     // Build string return value
     std::string text;
 
     for (int row{0}; row < height; row++) {
-        for (int col{0}; col < width; col++)
+        for (int col{0}; col < width; col++) {
             text += h_out[row * width + col];
+        }
 
-        if (row != height - 1) text += '\n';
+        if (row != height - 1) {
+            text += '\n';
+        }
     }
 
     return text;

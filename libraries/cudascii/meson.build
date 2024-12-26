@@ -39,6 +39,7 @@ lib_static_cuda_cudascii = static_library(
         cuda_dep,
         lib_static_cimg_dep,
         libcudart_dep,
+        scope_guard_dep,
         sdl2_dep,
         sdl2_ttf_dep,
         spdlog_dep,

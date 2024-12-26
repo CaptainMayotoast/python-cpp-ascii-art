@@ -3,7 +3,9 @@
 #include <cimg_cimg.hpp>
 #include <cstdint>
 #include <filesystem>
+#include <numeric>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -27,7 +29,7 @@ generateASCIIChars() noexcept
 {
     std::array<char, ReadableASCIISize> asciiChars;
 
-    for (uint8_t i{0U}; i < ReadableASCIISize; ++i) {
+    for (uint8_t i : std::views::iota(0U, ReadableASCIISize)) {
         asciiChars[i] = static_cast<char>(i + ASCIIStartIdx);
     }
 
