@@ -91,22 +91,23 @@ patch_to_ascii(
 __host__ __device__ void
 pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned char* b, int i)
 {
-    float c_linear, c_srgb;
-    int gray_index{0};
-
     // Standard linear combination
-    c_linear = RED_WEIGHT * (r[i] / 255.) + GREEN_WEIGHT * (g[i] / 255.) + BLUE_WEIGHT * (b[i] / 255.);
+    const float c_linear{
+            RED_WEIGHT * (r[i] / 255.0f) + GREEN_WEIGHT * (g[i] / 255.0f) + BLUE_WEIGHT * (b[i] / 255.0f)};
+
+    float c_srgb{0.0f};
 
     // If gray level is very dark, use linear scaling
-    if (c_linear <= CONVERSION_THRESHOLD) c_srgb = BELOW_THRESHOLD_SCALAR * c_linear;
-
-    // Non linear scaling to adjust for gamma exposure
-    else
+    if (c_linear <= CONVERSION_THRESHOLD) {
+        c_srgb = BELOW_THRESHOLD_SCALAR * c_linear;
+    } else {
+        // Non linear scaling to adjust for gamma exposure
         c_srgb = ABOVE_THRESHOLD_SCALAR * powf(c_linear, ABOVE_THRESHOLD_EXPONENT)
                  + ABOVE_THRESHOLD_OFFSET;
+    }
 
     // Scale c_srgb to the gray levels while handling an edge case of c_srgb = 1
-    gray_index = static_cast<int>(
+    const int gray_index = static_cast<int>(
             std::fmin((1 - c_srgb) * gray_levels_fine_count, gray_levels_fine_count - 1));
 
     // Final character representing the gray level of the RGB pixel
@@ -133,12 +134,23 @@ pixel_to_ascii_kernel(
     pixel_to_ascii(out, r, g, b, i);
 }
 
+// __global__ void
+// generate_ascii_from_patch_comparison_kernel(
+//         unsigned char* out,
+//         unsigned char* r,
+//         unsigned char* g,
+//         unsigned char* b,
+//         int width,
+//         int height)
+// {
+// }
+
 std::string
 image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
-    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
-
     spdlog::info("Reading file: {}", filename);
+
+    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
 
     std::optional<cimg_library::CImg<unsigned char>> src;
 
@@ -189,10 +201,10 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     unsigned char* d_g{nullptr};
     unsigned char* d_b{nullptr};
 
-    int cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
-    int cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)};
-    int cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
-    int cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
+    const int cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
+    const int cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)};
+    const int cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
+    const int cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
 
     finally
     {
@@ -207,8 +219,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     spdlog::info("Allocated GPU memory");
 
     if ((cs_out | cs_r | cs_g | cs_b) != cudaSuccess) {
-        spdlog::error("failed!");
-        spdlog::error("cs_out {}, cs_r {}, cs_g {}, cs_b {}", cs_out, cs_r, cs_g, cs_b);
+        spdlog::error("failed! cs_out {}, cs_r {}, cs_g {}, cs_b {}", cs_out, cs_r, cs_g, cs_b);
         return "";
     }
 
@@ -226,7 +237,6 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         return "";
     }
 
-    // Launch kernel
     dim3 blockSize(16, 16);  // 16x16 threads per block
     dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y);
 
@@ -249,20 +259,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         return "";
     }
 
-    // Build string return value
-    std::string text;
-
-    for (int row{0}; row < height; row++) {
-        for (int col{0}; col < width; col++) {
-            text += h_out[row * width + col];
-        }
-
-        if (row != height - 1) {
-            text += '\n';
-        }
-    }
-
-    return text;
+    return cudascii::utils::buildString(h_out, width, height);
 }
 
 }  // namespace cudascii::pyfunctions

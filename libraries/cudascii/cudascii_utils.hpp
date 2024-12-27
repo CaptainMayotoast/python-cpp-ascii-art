@@ -59,6 +59,25 @@ ascii_chars_to_patchs(
         const std::filesystem::path& ttf_path = {
                 "/build/applications/sample/assets/CourierPrime-Regular.ttf"});
 
+[[nodiscard]] inline std::string
+buildString(const std::vector<unsigned char>& asciiChars, int width, int height) noexcept
+{
+    std::string text;
+    text.reserve(asciiChars.size());
+
+    for (int row{0}; row < height; row++) {
+        for (int col{0}; col < width; col++) {
+            text += asciiChars[row * width + col];
+        }
+
+        if (row != height - 1) {
+            text += '\n';
+        }
+    }
+
+    return text;
+}
+
 [[nodiscard]] cimg_library::CImg<unsigned char>
 crop_to_grid(cimg_library::CImg<unsigned char> src, int cell_width, int cell_height);
 

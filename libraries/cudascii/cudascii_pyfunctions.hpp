@@ -7,7 +7,16 @@ namespace cudascii::pyfunctions {
 ////////////////////////////////////////////////////////////////////
 // CUDA functions
 
-// Cuda kernel function mapping an RGB pixel to a gray level char
+/**
+ * @brief CUDA kernel function mapping an RGB pixel to a gray level char
+ *
+ * @param out out parameter for ASCII characters
+ * @param r the array of unsigned char representing the RED channel
+ * @param g the array of unsigned char representing the GREEN channel
+ * @param b the array of unsigned char representing the BLUE channel
+ * @param width width of the image
+ * @param height height of the image
+ */
 void
 pixel_to_ascii_kernel(
         unsigned char* out,
@@ -17,7 +26,24 @@ pixel_to_ascii_kernel(
         int width,
         int height);
 
-// function for mapping an RGB pixel to a gray level char
+// void
+// generate_ascii_from_patch_comparison_kernel(
+//         unsigned char* r,
+//         unsigned char* g,
+//         unsigned char* b,
+//         int width,
+//         int height,
+//         unsigned char* out);
+
+/**
+ *  @brief Maps an RGB pixel to a gray level char
+ *
+ * @param out Out parameter for ASCII characters
+ * @param r The array of unsigned char representing the RED channel
+ * @param g The array of unsigned char representing the GREEN channel
+ * @param b The array of unsigned char representing the BLUE channel
+ * @param i The pixel index
+ */
 void
 pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned char* b, int i);
 
@@ -34,9 +60,15 @@ pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned 
  * height of an Ubuntu monospace font)
  * @return std::string the ASCII representation of an image
  */
-std::string
+[[nodiscard]] std::string
 image_to_ascii(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
-std::tuple<int, int, int>
+
+/**
+ * @brief Gets the width, height and channels of the image
+ *
+ * @param filename The file to process
+ */
+[[nodiscard]] std::tuple<int, int, int>
 get_image_size(const std::string& filename);
 
 PYBIND11_MODULE(cudascii, m)
