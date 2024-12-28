@@ -147,14 +147,17 @@ pixel_to_ascii_kernel(
 // }
 
 std::string
-image_to_ascii(const std::string& filename, int patch_width, int patch_height)
+image_to_ascii_cpu([[maybe_unused]] const std::string& filename, [[maybe_unused]] int patch_width, [[maybe_unused]] int patch_height)
 {
-    spdlog::set_level(spdlog::level::debug);
+    [[maybe_unused]] const auto char_patches =
+            cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
 
-    spdlog::info("Reading file: {}", filename);
+    return "";
+}
 
-    const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
-
+std::string
+image_to_ascii_gpu(const std::string& filename, int patch_width, int patch_height)
+{
     std::optional<cimg_library::CImg<unsigned char>> src;
 
     // Load Image using CImg
@@ -185,7 +188,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         return "";
     }
 
-    spdlog::info("Max: {}, min: {}", src->max(), src->min());
+    spdlog::debug("Max: {}, min: {}", src->max(), src->min());
 
     // Get the cropped image dimensions
     const int width{src->width()};
@@ -204,9 +207,9 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     unsigned char* d_g{nullptr};
     unsigned char* d_b{nullptr};
 
-    const auto cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
-
-    if (cs_out != cudaSuccess) {
+    if (const auto cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
+        cs_out != cudaSuccess)
+    {
         spdlog::error("failed! cs_out {}", cudaGetErrorString(cs_out));
         return "";
     }
@@ -218,9 +221,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         cudaFree(d_out);
     };
 
-    const auto cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)};
-
-    if (cs_r != cudaSuccess) {
+    if (const auto cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)}; cs_r != cudaSuccess) {
         spdlog::error("failed! cs_r {}", cudaGetErrorString(cs_r));
         return "";
     }
@@ -232,9 +233,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         cudaFree(d_r);
     };
 
-    const auto cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
-
-    if (cs_g != cudaSuccess) {
+    if (const auto cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)}; cs_g != cudaSuccess) {
         spdlog::error("failed! cs_g {}", cudaGetErrorString(cs_g));
         return "";
     }
@@ -246,9 +245,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
         cudaFree(d_g);
     };
 
-    const auto cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
-
-    if (cs_b != cudaSuccess) {
+    if (const auto cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)}; cs_b != cudaSuccess) {
         spdlog::error("failed! cs_b {}", cudaGetErrorString(cs_b));
         return "";
     }
@@ -272,7 +269,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     spdlog::info("Copied CPU to GPU memory");
 
     if (error != cudaSuccess) {
-        spdlog::error("cudaMemcpy failure with result {}", std::to_string(error));
+        spdlog::error("cudaMemcpy failure with result {}", cudaGetErrorString(error));
         return "";
     }
 
@@ -299,6 +296,17 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     }
 
     return cudascii::utils::buildString(h_out, width, height);
+}
+
+std::string
+image_to_ascii(const std::string& filename, int patch_width, int patch_height, bool useCpu)
+{
+    spdlog::set_level(spdlog::level::debug);
+
+    spdlog::info("Reading file: {}", filename);
+
+    return useCpu ? image_to_ascii_cpu(filename, patch_width, patch_height)
+                  : image_to_ascii_gpu(filename, patch_width, patch_height);
 }
 
 }  // namespace cudascii::pyfunctions

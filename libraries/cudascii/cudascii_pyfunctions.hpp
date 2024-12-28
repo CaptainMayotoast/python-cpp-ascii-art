@@ -51,6 +51,32 @@ pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned 
 // Python functions within the module
 
 /**
+ * @brief Convert an image to ASCII (CPU)
+ *
+ * @param filename the image to convert
+ * @param patch_width the width in pixels of a character (defaulted to 8, which appears to be the width
+ * of an Ubuntu monospace font)
+ * @param patch_height the height in pixels of a character (defaulted to 14, which appears to be the
+ * height of an Ubuntu monospace font)
+ * @return std::string the ASCII representation of an image
+ */
+[[nodiscard]] std::string
+image_to_ascii_cpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+
+/**
+ * @brief Convert an image to ASCII (GPU)
+ *
+ * @param filename the image to convert
+ * @param patch_width the width in pixels of a character (defaulted to 8, which appears to be the width
+ * of an Ubuntu monospace font)
+ * @param patch_height the height in pixels of a character (defaulted to 14, which appears to be the
+ * height of an Ubuntu monospace font)
+ * @return std::string the ASCII representation of an image
+ */
+[[nodiscard]] std::string
+image_to_ascii_gpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+
+/**
  * @brief Convert an image to ASCII
  *
  * @param filename the image to convert
@@ -61,7 +87,11 @@ pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned 
  * @return std::string the ASCII representation of an image
  */
 [[nodiscard]] std::string
-image_to_ascii(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+image_to_ascii(
+        const std::string& filename,
+        int patch_width = 8u,
+        int patch_height = 14u,
+        bool useCpu = false);
 
 /**
  * @brief Gets the width, height and channels of the image

@@ -65,12 +65,13 @@ buildString(const std::vector<unsigned char>& asciiChars, int width, int height)
     std::string text;
     text.reserve(asciiChars.size());
 
-    for (int row{0}; row < height; row++) {
-        for (int col{0}; col < width; col++) {
-            text += asciiChars[row * width + col];
-        }
+    for (int index{0}; index < width * height; ++index) {
+        const int row = index / width;
+        const int col = index % width;
 
-        if (row != height - 1) {
+        text += asciiChars[row * width + col];
+
+        if (col == width - 1) {
             text += '\n';
         }
     }
