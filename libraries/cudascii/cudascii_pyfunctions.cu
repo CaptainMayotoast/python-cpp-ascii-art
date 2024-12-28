@@ -93,7 +93,8 @@ pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned 
 {
     // Standard linear combination
     const float c_linear{
-            RED_WEIGHT * (r[i] / 255.0f) + GREEN_WEIGHT * (g[i] / 255.0f) + BLUE_WEIGHT * (b[i] / 255.0f)};
+            RED_WEIGHT * (r[i] / 255.0f) + GREEN_WEIGHT * (g[i] / 255.0f)
+            + BLUE_WEIGHT * (b[i] / 255.0f)};
 
     float c_srgb{0.0f};
 
@@ -148,6 +149,8 @@ pixel_to_ascii_kernel(
 std::string
 image_to_ascii(const std::string& filename, int patch_width, int patch_height)
 {
+    spdlog::set_level(spdlog::level::debug);
+
     spdlog::info("Reading file: {}", filename);
 
     const auto char_patches = cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
@@ -201,27 +204,63 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     unsigned char* d_g{nullptr};
     unsigned char* d_b{nullptr};
 
-    const int cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
-    const int cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)};
-    const int cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
-    const int cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
+    const auto cs_out{cudaMalloc(static_cast<unsigned char**>(&d_out), bytes)};
+
+    if (cs_out != cudaSuccess) {
+        spdlog::error("failed! cs_out {}", cudaGetErrorString(cs_out));
+        return "";
+    }
 
     finally
     {
-        spdlog::info("Freeing CUDA memory");
+        spdlog::debug("Freeing CUDA memory for cs_out");
 
         cudaFree(d_out);
+    };
+
+    const auto cs_r{cudaMalloc(static_cast<unsigned char**>(&d_r), bytes)};
+
+    if (cs_r != cudaSuccess) {
+        spdlog::error("failed! cs_r {}", cudaGetErrorString(cs_r));
+        return "";
+    }
+
+    finally
+    {
+        spdlog::debug("Freeing CUDA memory for cs_r");
+
         cudaFree(d_r);
+    };
+
+    const auto cs_g{cudaMalloc(static_cast<unsigned char**>(&d_g), bytes)};
+
+    if (cs_g != cudaSuccess) {
+        spdlog::error("failed! cs_g {}", cudaGetErrorString(cs_g));
+        return "";
+    }
+
+    finally
+    {
+        spdlog::debug("Freeing CUDA memory for cs_g");
+
         cudaFree(d_g);
+    };
+
+    const auto cs_b{cudaMalloc(static_cast<unsigned char**>(&d_b), bytes)};
+
+    if (cs_b != cudaSuccess) {
+        spdlog::error("failed! cs_b {}", cudaGetErrorString(cs_b));
+        return "";
+    }
+
+    finally
+    {
+        spdlog::debug("Freeing CUDA memory for cs_b");
+
         cudaFree(d_b);
     };
 
     spdlog::info("Allocated GPU memory");
-
-    if ((cs_out | cs_r | cs_g | cs_b) != cudaSuccess) {
-        spdlog::error("failed! cs_out {}, cs_r {}, cs_g {}, cs_b {}", cs_out, cs_r, cs_g, cs_b);
-        return "";
-    }
 
     // Copy the image from host (CPU) to device (GPU)
     cudaMemcpy(d_r, src->channel(0), bytes, cudaMemcpyHostToDevice);
@@ -247,7 +286,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     error = cudaGetLastError();
 
     if (error != cudaSuccess) {
-        spdlog::error("cudaMemcpy failure with result {}", std::to_string(error));
+        spdlog::error("cudaMemcpy failure with result {}", cudaGetErrorString(error));
         return "";
     }
 
@@ -255,7 +294,7 @@ image_to_ascii(const std::string& filename, int patch_width, int patch_height)
     const auto result = cudaMemcpy(h_out.data(), d_out, bytes, cudaMemcpyDeviceToHost);
 
     if (result != cudaSuccess) {
-        spdlog::error("cudaMemcpy failure with result {}", std::to_string(error));
+        spdlog::error("cudaMemcpy failure with result {}", cudaGetErrorString(error));
         return "";
     }
 
