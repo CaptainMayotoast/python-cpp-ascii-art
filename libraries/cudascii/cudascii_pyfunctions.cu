@@ -20,7 +20,8 @@ __device__ const constexpr auto gray_levels_fine = cudascii::utils::generate_asc
 __device__ const constexpr int gray_levels_fine_count = gray_levels_fine.size();
 auto gray_levels_fine_sv = std::string_view{gray_levels_fine.data()};
 
-__device__ const constexpr char32_t* gray_blocks = U"\u2588\u2593\u2592\u2591\u0020"; //{U"\u2588", U"\u2593", U"\u2592", U"\u2591", U"\u0020"};
+__device__ const constexpr char32_t* gray_blocks =
+        U"\u2588\u2593\u2592\u2591\u0020";  //{U"\u2588", U"\u2593", U"\u2592", U"\u2591", U"\u0020"};
 const constexpr int gray_blocks_count = 5;
 
 const constexpr float RED_WEIGHT = 0.2126;
@@ -111,8 +112,8 @@ pixel_to_ascii(char32_t* out, unsigned char* r, unsigned char* g, unsigned char*
     }
 
     // Scale c_srgb to the gray levels while handling an edge case of c_srgb = 1
-    const int gray_index = static_cast<int>(
-            std::fmin((1 - c_srgb) * gray_blocks_count, gray_blocks_count - 1));
+    const int gray_index =
+            static_cast<int>(std::fmin((1 - c_srgb) * gray_blocks_count, gray_blocks_count - 1));
 
     // Final character representing the gray level of the RGB pixel
     out[i] = gray_blocks[gray_index];
@@ -150,7 +151,10 @@ pixel_to_ascii_kernel(
 // }
 
 std::u32string
-image_to_ascii_cpu([[maybe_unused]] const std::string& filename, [[maybe_unused]] int patch_width, [[maybe_unused]] int patch_height)
+image_to_ascii_cpu(
+        [[maybe_unused]] const std::string& filename,
+        [[maybe_unused]] int patch_width,
+        [[maybe_unused]] int patch_height)
 {
     [[maybe_unused]] const auto char_patches =
             cudascii::utils::ascii_chars_to_patchs(gray_levels_fine_sv, 14);
@@ -208,7 +212,6 @@ image_to_ascii_cpu([[maybe_unused]] const std::string& filename, [[maybe_unused]
     spdlog::info("Finished string");
 
     return result;
-
 }
 
 std::u32string
@@ -263,9 +266,7 @@ image_to_ascii_gpu(const std::string& filename, int patch_width, int patch_heigh
     unsigned char* d_g{nullptr};
     unsigned char* d_b{nullptr};
 
-    if (const auto cs_out{cudaMalloc(static_cast<char32_t**>(&d_out), bytes)};
-        cs_out != cudaSuccess)
-    {
+    if (const auto cs_out{cudaMalloc(static_cast<char32_t**>(&d_out), bytes)}; cs_out != cudaSuccess) {
         spdlog::error("failed! cs_out {}", cudaGetErrorString(cs_out));
         return std::u32string{};
     }
@@ -354,15 +355,70 @@ image_to_ascii_gpu(const std::string& filename, int patch_width, int patch_heigh
     return cudascii::utils::build_string(h_out, width, height);
 }
 
-std::u32string
-image_to_ascii(const std::string& filename, int patch_width, int patch_height, bool use_cpu)
+std::string
+process_shaded_gpu(
+        [[maybe_unused]] const std::string& filename,
+        [[maybe_unused]] int patch_width,
+        [[maybe_unused]] int patch_height)
+{
+    return "";
+}
+
+std::string
+process_shaded_cpu(
+        [[maybe_unused]] const std::string& filename,
+        [[maybe_unused]] int patch_width,
+        [[maybe_unused]] int patch_height)
+{
+    return "";
+}
+
+std::string
+process_shaded(const std::string& filename, int patch_width, int patch_height, bool use_cpu)
+{
+    return use_cpu ? process_shaded_cpu(filename, patch_width, patch_height)
+                   : process_shaded_gpu(filename, patch_width, patch_height);
+}
+
+[[nodiscard]] std::string
+process_edges_gpu(
+        [[maybe_unused]] const std::string& filename,
+        [[maybe_unused]] int patch_width,
+        [[maybe_unused]] int patch_height)
+{
+    return "";
+}
+
+[[nodiscard]] std::string
+process_edges_cpu(
+        [[maybe_unused]] const std::string& filename,
+        [[maybe_unused]] int patch_width,
+        [[maybe_unused]] int patch_height)
+{
+    return "";
+}
+
+std::string
+process_edges(const std::string& filename, int patch_width, int patch_height, bool use_cpu)
+{
+    return use_cpu ? process_edges_cpu(filename, patch_width, patch_height)
+                   : process_edges_gpu(filename, patch_width, patch_height);
+}
+
+std::string
+image_to_ascii(
+        const std::string& filename,
+        int patch_width,
+        int patch_height,
+        bool use_edges,
+        bool use_cpu)
 {
     spdlog::set_level(spdlog::level::debug);
 
     spdlog::info("Reading file: {}", filename);
 
-    return use_cpu ? image_to_ascii_cpu(filename, patch_width, patch_height)
-                  : image_to_ascii_gpu(filename, patch_width, patch_height);
+    return use_edges ? process_edges(filename, patch_width, patch_height, use_cpu)
+                     : process_shaded(filename, patch_width, patch_height, use_cpu);
 }
 
 }  // namespace cudascii::pyfunctions

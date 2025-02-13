@@ -76,6 +76,32 @@ image_to_ascii_cpu(const std::string& filename, int patch_width = 8u, int patch_
 [[nodiscard]] std::u32string
 image_to_ascii_gpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
 
+[[nodiscard]] std::string
+process_shaded_gpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+
+[[nodiscard]] std::string
+process_shaded_cpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+
+[[nodiscard]] std::string
+process_shaded(
+        const std::string& filename,
+        int patch_width = 8u,
+        int patch_height = 14u,
+        bool use_cpu = false);
+
+[[nodiscard]] std::string
+process_edges_gpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+
+[[nodiscard]] std::string
+process_edges_cpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
+
+[[nodiscard]] std::string
+process_edges(
+        const std::string& filename,
+        int patch_width = 8u,
+        int patch_height = 14u,
+        bool use_cpu = false);
+
 /**
  * @brief Convert an image to ASCII
  *
@@ -91,6 +117,7 @@ image_to_ascii(
         const std::string& filename,
         int patch_width = 8u,
         int patch_height = 14u,
+        bool use_edges = false,
         bool use_cpu = false);
 
 /**
