@@ -60,7 +60,7 @@ pixel_to_ascii(unsigned char* out, unsigned char* r, unsigned char* g, unsigned 
  * height of an Ubuntu monospace font)
  * @return std::string the ASCII representation of an image
  */
-[[nodiscard]] std::string
+[[nodiscard]] std::u32string
 image_to_ascii_cpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
 
 /**
@@ -73,7 +73,7 @@ image_to_ascii_cpu(const std::string& filename, int patch_width = 8u, int patch_
  * height of an Ubuntu monospace font)
  * @return std::string the ASCII representation of an image
  */
-[[nodiscard]] std::string
+[[nodiscard]] std::u32string
 image_to_ascii_gpu(const std::string& filename, int patch_width = 8u, int patch_height = 14u);
 
 /**
@@ -86,12 +86,12 @@ image_to_ascii_gpu(const std::string& filename, int patch_width = 8u, int patch_
  * height of an Ubuntu monospace font)
  * @return std::string the ASCII representation of an image
  */
-[[nodiscard]] std::string
+[[nodiscard]] std::u32string
 image_to_ascii(
         const std::string& filename,
         int patch_width = 8u,
         int patch_height = 14u,
-        bool useCpu = false);
+        bool use_cpu = false);
 
 /**
  * @brief Gets the width, height and channels of the image

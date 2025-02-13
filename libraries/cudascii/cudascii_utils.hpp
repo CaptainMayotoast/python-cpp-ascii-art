@@ -25,15 +25,15 @@ const constexpr uint8_t ReadableASCIISize{ASCIIEndIdx - ASCIIStartIdx + 1};
 /// @note https://en.cppreference.com/w/cpp/language/ascii
 /// @return the readable ASCII characters as a std::array
 [[nodiscard]] consteval std::array<char, ReadableASCIISize>
-generateASCIIChars() noexcept
+generate_ascii_chars() noexcept
 {
-    std::array<char, ReadableASCIISize> asciiChars;
+    std::array<char, ReadableASCIISize> ascii_chars;
 
     for (uint8_t i : std::views::iota(0U, ReadableASCIISize)) {
-        asciiChars[i] = static_cast<char>(i + ASCIIStartIdx);
+        ascii_chars[i] = static_cast<char>(i + ASCIIStartIdx);
     }
 
-    return asciiChars;
+    return ascii_chars;
 }
 
 /// @brief gets the pixel from an SDL_Surface by row and col
@@ -59,17 +59,17 @@ ascii_chars_to_patchs(
         const std::filesystem::path& ttf_path = {
                 "/build/applications/sample/assets/CourierPrime-Regular.ttf"});
 
-[[nodiscard]] inline std::string
-buildString(const std::vector<unsigned char>& asciiChars, int width, int height) noexcept
+[[nodiscard]] inline std::u32string
+build_string(const std::vector<char32_t>& unicode_chars, int width, int height) noexcept
 {
-    std::string text;
-    text.reserve(asciiChars.size());
+    std::u32string text;
+    // text.reserve(unicode_chars.size());
 
     for (int index{0}; index < width * height; ++index) {
         const int row = index / width;
         const int col = index % width;
 
-        text += asciiChars[row * width + col];
+        text += unicode_chars.at(row * width + col);
 
         if (col == width - 1) {
             text += '\n';

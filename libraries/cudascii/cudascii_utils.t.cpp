@@ -60,7 +60,7 @@ const std::vector<std::uint8_t> Actual_Tilda{
 
 TEST_CASE("ascii_character_generation", "[cudascii_utils]")
 {
-    const constexpr auto ascii_characters{cudascii::utils::generateASCIIChars()};
+    const constexpr auto ascii_characters{cudascii::utils::generate_ascii_chars()};
 
     // confirm that the beginning and end are ' ' and '~' respectively
     CHECK(' ' == ascii_characters.front());
@@ -104,7 +104,7 @@ TEST_CASE("ascii_chars_to_patchs_font_14", "[cudascii_utils]")
 
 TEST_CASE("ascii_chars_to_patchs_front_back_font_14", "[cudascii_utils]")
 {
-    const constexpr auto ascii_characters = cudascii::utils::generateASCIIChars();
+    const constexpr auto ascii_characters = cudascii::utils::generate_ascii_chars();
     auto sv_ascii_characters = std::string_view{ascii_characters};
 
     const auto calculated_patches =
@@ -128,7 +128,7 @@ TEST_CASE("ascii_chars_to_patchs_front_back_font_14", "[cudascii_utils]")
 
 TEST_CASE("ascii_chars_to_patchs_sizes_font_14", "[cudascii_utils]")
 {
-    const constexpr auto ascii_characters = cudascii::utils::generateASCIIChars();
+    const constexpr auto ascii_characters = cudascii::utils::generate_ascii_chars();
     auto sv_ascii_characters = std::string_view{ascii_characters};
 
     const auto calculated_patches =

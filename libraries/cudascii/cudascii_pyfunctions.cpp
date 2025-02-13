@@ -9,7 +9,7 @@
 namespace {
 
 // Algorithm Parameterization
-__device__ const constexpr auto gray_levels_fine = cudascii::utils::generateASCIIChars();
+__device__ const constexpr auto gray_levels_fine = cudascii::utils::generate_ascii_chars();
 __device__ const constexpr int gray_levels_fine_count = gray_levels_fine.size();
 auto gray_levels_fine_sv = std::string_view{gray_levels_fine.data()};
 

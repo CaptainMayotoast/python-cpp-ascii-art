@@ -8,7 +8,7 @@
 
 ```python
 import cudascii as ca
-print(ca.image_to_ascii("/build/applications/sample/assets/isocpp_squished.png", 8, 14))
+print(ca.image_to_ascii("/build/applications/sample/assets/isocpp_squished.png", 8, 14, True))
 ```
 
 4. Result should look similar to:
